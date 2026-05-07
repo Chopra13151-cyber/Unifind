@@ -1,0 +1,386 @@
+CREATE DATABASE unifind_db;
+USE unifind_db;
+--  UniFind — Complete Database Script
+--  Covers: DDL, DML, DQL, Normalization, Keys, Joins,
+--          Group By,Having, Stored Procedure, Transactions, Subqueries
+
+--  1. TABLE FORMATION + DDL   2. NORMALIZATION — 3NF is maintained  
+DROP TABLE IF EXISTS item_status_log;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS cctv_requests;
+DROP TABLE IF EXISTS items;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;
+
+
+CREATE TABLE categories (
+  category_id   INT AUTO_INCREMENT PRIMARY KEY,   -- PK
+  name          VARCHAR(60) NOT NULL UNIQUE        -- Candidate Key
+);
+
+-- ── USERS 
+CREATE TABLE users (
+  user_id       INT AUTO_INCREMENT PRIMARY KEY,    -- PK
+  full_name     VARCHAR(100) NOT NULL,
+  email         VARCHAR(150) NOT NULL UNIQUE,      -- Candidate Key
+  password_hash VARCHAR(255) NOT NULL,
+  phone         VARCHAR(20),
+  role ENUM('student','staff','clerk','admin') DEFAULT 'student',
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ── ITEMS 
+CREATE TABLE items (
+  item_id       INT AUTO_INCREMENT PRIMARY KEY,    -- PK
+  user_id       INT,                               -- FK → users
+  category_id   INT,                               -- FK → categories (3NF)
+  title         VARCHAR(255) NOT NULL,
+  description   TEXT,
+  image_url     TEXT,
+  location      VARCHAR(255),
+  type          ENUM('lost','found') NOT NULL,
+  status ENUM('active','matched','resolved') DEFAULT 'active',
+  reported_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id)     REFERENCES users(user_id)           ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES categories(category_id)  ON DELETE SET NULL
+);
+
+-- ── COMMENTS 
+CREATE TABLE comments (
+  comment_id    INT AUTO_INCREMENT PRIMARY KEY,    -- PK
+  item_id       INT,                               -- FK → items
+  user_id       INT,                               -- FK → users (nullable = guest)
+  comment_text  TEXT NOT NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+-- ── CCTV REQUESTS 
+CREATE TABLE cctv_requests (
+  request_id    INT AUTO_INCREMENT PRIMARY KEY,    -- PK
+  requester_id  INT,                               -- FK → users
+  item_id       INT,                               -- FK → items
+  incident_date DATE,
+  incident_time TIME,
+  location      VARCHAR(255),
+  reason        TEXT,
+  status ENUM('pending','approved','rejected','completed') DEFAULT 'pending',
+  admin_note    TEXT,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (requester_id) REFERENCES users(user_id)  ON DELETE CASCADE,
+  FOREIGN KEY (item_id)      REFERENCES items(item_id)  ON DELETE SET NULL
+);
+
+-- ── NOTIFICATIONS (new — 3NF bonus table) 
+CREATE TABLE notifications (
+  notif_id      INT AUTO_INCREMENT PRIMARY KEY,    -- PK
+  user_id       INT NOT NULL,                      -- FK → users
+  message       VARCHAR(500) NOT NULL,
+  is_read       TINYINT(1) DEFAULT 0,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- ── ITEM STATUS LOG (audit trail)
+CREATE TABLE item_status_log (
+  log_id        INT AUTO_INCREMENT PRIMARY KEY,    -- PK
+  item_id       INT NOT NULL,                      -- FK → items
+  old_status    VARCHAR(20),
+  new_status    VARCHAR(20),
+  changed_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE CASCADE
+);
+
+
+--  AI Matches Table
+
+CREATE TABLE IF NOT EXISTS ai_matches (
+  match_id          INT AUTO_INCREMENT PRIMARY KEY,
+  lost_item_id      INT NOT NULL,
+  found_item_id     INT NOT NULL,
+  confidence_score  TINYINT UNSIGNED NOT NULL DEFAULT 0,  -- 0–100
+  match_reason      VARCHAR(400),
+  status ENUM('pending','confirmed','dismissed') DEFAULT 'pending',
+  created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  -- Prevent duplicate pairs
+  UNIQUE KEY uq_pair (lost_item_id, found_item_id),
+  FOREIGN KEY (lost_item_id)  REFERENCES items(item_id) ON DELETE CASCADE,
+  FOREIGN KEY (found_item_id) REFERENCES items(item_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_ai_matches_score ON ai_matches(confidence_score DESC);
+
+
+
+-- ════════════════════════════════════════════════════════════
+-- 4. DML — INSERT MOCK DATA
+
+-- Categories 
+INSERT INTO categories (name) VALUES
+  ('Electronics'), ('Clothing'), ('Stationery'),
+  ('Keys'), ('Wallet/Bag'), ('Books'), ('Other');
+
+-- Users  
+INSERT INTO users (full_name, email, password_hash, phone, role) VALUES
+  ('Vishal Singh',   'vishal@uni.edu',  '$2a$10$examplehash1', '9876543210', 'student'),
+  ('Ayesha Khan',    'ayesha@uni.edu',  '$2a$10$examplehash2', '9812345678', 'student'),
+  ('Rajan Mehra',    'rajan@uni.edu',   '$2a$10$examplehash3', '9801234567', 'staff'),
+  ('Admin User',     'admin@uni.edu',   '$2a$10$examplehash4', '9800000001', 'admin'),
+  ('Priya Sharma',   'priya@uni.edu',   '$2a$10$examplehash5', '9811112222', 'student');
+
+-- Items (uses category_id FK instead of raw string)
+INSERT INTO items (user_id, category_id, title, description, location, type, status) VALUES
+  (1, 1, 'Black Dell Laptop',      'Left near library shelf B2',      'Library Floor 2',   'lost',  'active'),
+  (2, 5, 'Brown Leather Wallet',   'Found near canteen entrance',     'Canteen',           'found', 'active'),
+  (1, 4, 'Honda Key Ring',         'Lost near parking lot C',         'Parking Lot C',     'lost',  'matched'),
+  (3, 4, 'Honda Key Ring Found',   'Found in parking area this AM',   'Parking Lot C',     'found', 'matched'),
+  (5, 1, 'iPhone 13 Black',        'Fell from bench near Block A',    'Block A',           'lost',  'active'),
+  (2, 3, 'Blue Geometry Box',      'Found on library table',          'Library Floor 1',   'found', 'active');
+
+
+-- Comments
+INSERT INTO comments (item_id, user_id, comment_text) VALUES
+  (1, 2, '[Ayesha Khan | 📞 9812345678]\nI saw a laptop near library B2 — check lost & found desk.'),
+  (2, 1, '[Vishal Singh | 📞 9876543210]\nThis might be mine! Brown with a Visa card inside.'),
+  (5, 3, '[Rajan Mehra | 📞 9801234567]\nSecurity found a black phone near Block A gate.');
+
+-- CCTV Requests
+INSERT INTO cctv_requests (requester_id, item_id, incident_date, incident_time, location, reason) VALUES
+  (1, 1, '2025-04-20', '14:30:00', 'Library Floor 2', 'Laptop stolen, need footage between 2-3 PM'),
+  (5, 5, '2025-04-22', '10:00:00', 'Block A',          'Phone missing, request footage from morning');
+
+-- Notifications
+INSERT INTO notifications (user_id, message) VALUES
+  (1, 'A comment was posted on your item: Black Dell Laptop'),
+  (2, 'Your found item matched a lost report! Check My Items.'),
+  (5, 'Admin approved your CCTV request.');
+
+-- Status log entries
+INSERT INTO item_status_log (item_id, old_status, new_status) VALUES
+  (3, 'active', 'matched'),
+  (4, 'active', 'matched'),
+  (6, 'active', 'resolved');
+
+
+-- DQL — Useful SELECT queries used by the backend
+
+Select * from users;
+Select * from items;
+Select * from cctv_requests;
+Select * from comments;
+Select * from notifications;
+Select * from ai_matches;
+Select * from item_status_log;
+Select * from categories;
+DESCRIBE items;
+
+-- 5. JOINS
+
+-- JOIN 1: INNER JOIN
+SELECT
+  i.item_id,
+  i.title,
+  i.type,
+  i.status,
+  i.location,
+  u.full_name   AS reported_by,
+  c.name        AS category_name,
+  i.reported_at
+FROM items i
+INNER JOIN users      u ON i.user_id     = u.user_id
+LEFT JOIN  categories c ON i.category_id = c.category_id
+ORDER BY i.reported_at DESC;
+
+-- JOIN 2: LEFT JOIN
+SELECT
+  u.user_id,
+  u.full_name,
+  u.role,
+  COUNT(i.item_id) AS total_reports
+FROM users u
+LEFT JOIN items i ON i.user_id = u.user_id
+GROUP BY u.user_id, u.full_name, u.role
+ORDER BY total_reports DESC;
+
+
+-- 6. GROUP BY 
+-- a. Item stats per category
+SELECT
+  c.name              AS category,
+  COUNT(i.item_id)    AS total_items,
+  SUM(i.type = 'lost')    AS lost_count,
+  SUM(i.type = 'found')   AS found_count,
+  SUM(i.status = 'matched')   AS matched_count
+FROM categories c
+LEFT JOIN items i ON i.category_id = c.category_id
+GROUP BY c.category_id, c.name
+ORDER BY total_items DESC;
+
+
+-- b.
+SELECT
+  status,
+  COUNT(*) AS total_requests
+FROM cctv_requests
+GROUP BY status
+ORDER BY total_requests DESC;
+
+
+-- 6c. STORED PROCEDURE — resolve_match(lostId, foundId)
+
+DROP PROCEDURE IF EXISTS resolve_match;
+
+DELIMITER $$
+
+CREATE PROCEDURE resolve_match(
+  IN p_lost_id  INT,
+  IN p_found_id INT
+)
+BEGIN
+  DECLARE v_lost_owner  INT;
+  DECLARE v_found_owner INT;
+
+  -- Fetch owners
+  SELECT user_id INTO v_lost_owner  FROM items WHERE item_id = p_lost_id;
+  SELECT user_id INTO v_found_owner FROM items WHERE item_id = p_found_id;
+
+  START TRANSACTION;
+
+    -- Update both items to resolved
+    UPDATE items SET status = 'resolved' WHERE item_id = p_lost_id;
+    UPDATE items SET status = 'resolved' WHERE item_id = p_found_id;
+
+    INSERT INTO item_status_log (item_id, old_status, new_status)
+      VALUES (p_lost_id,  'matched', 'resolved'),
+             (p_found_id, 'matched', 'resolved');
+
+    -- Notify both owners
+    INSERT INTO notifications (user_id, message) VALUES
+      (v_lost_owner,
+       CONCAT('Great news! Your lost item (ID:', p_lost_id, ') has been resolved.')),
+      (v_found_owner,
+       CONCAT('Thank you! The item you found (ID:', p_found_id, ') has been claimed.'));
+
+  COMMIT;
+
+END$$
+
+DELIMITER ;
+
+-- Test call 
+CALL resolve_match(13, 12);
+
+
+-- 7. TRANSACTIONS — ACID example
+
+START TRANSACTION;
+
+  UPDATE items
+    SET status = 'matched'
+  WHERE item_id = 1 AND status = 'active';
+
+  UPDATE items
+    SET status = 'matched'
+  WHERE item_id = 2 AND status = 'active';
+
+  INSERT INTO item_status_log (item_id, old_status, new_status)
+    VALUES (1, 'active', 'matched'),
+           (2, 'active', 'matched');
+COMMIT;
+
+
+--  SECTION 8 HAVING
+ 
+-- 8a. active users
+SELECT full_name, role,
+  (SELECT COUNT(*) FROM items WHERE items.user_id = users.user_id) AS reports_count
+FROM users
+HAVING reports_count > 1
+ORDER BY reports_count DESC;
+ 
+-- 8c. 
+SELECT
+  location,
+  COUNT(*) AS lost_here
+FROM items
+WHERE type = 'lost'
+GROUP BY location
+HAVING lost_here >= 1
+ORDER BY lost_here DESC;
+ 
+
+-- 9. SUBQUERIES (2) 
+
+-- SUBQUERY 1: No item reported
+
+SELECT
+  user_id,
+  full_name,
+  email,
+  role
+FROM users
+WHERE user_id NOT IN (
+  SELECT DISTINCT user_id FROM items WHERE user_id IS NOT NULL
+);
+
+-- SUBQUERY 2: Items that have received AT LEAST ONE comment
+SELECT
+  i.item_id,
+  i.title,
+  i.type,
+  i.location,
+  (SELECT COUNT(*) FROM comments c WHERE c.item_id = i.item_id) AS comment_count
+FROM items i
+WHERE i.item_id IN (
+  SELECT DISTINCT item_id FROM comments
+)
+ORDER BY comment_count DESC;
+
+
+
+--  SECTION 10 — AGGREGATE FUNCTIONS
+ 
+-- Total items in system
+SELECT COUNT(*) AS total_items FROM items;
+ 
+SELECT
+  SUM(type = 'lost')          AS total_lost,
+  SUM(type = 'found')         AS total_found,
+  SUM(status = 'matched')     AS total_matched,
+  SUM(status = 'active')      AS total_active
+FROM items;
+
+
+--  SECTION 11 — VIEWS 
+ 
+-- View : Active unresolved items with reporter name
+CREATE OR REPLACE VIEW vw_active_items AS
+SELECT
+  i.item_id,
+  i.title,
+  i.type,
+  i.category,
+  i.location,
+  i.status,
+  u.full_name  AS reported_by,
+  i.reported_at
+FROM items i
+INNER JOIN users u ON i.user_id = u.user_id
+WHERE i.status = 'active';
+ 
+-- Use the view
+SELECT * FROM vw_active_items WHERE type = 'lost';
+ 
+
+-- Indexing
+CREATE INDEX idx_items_type_status ON items(type, status);
+CREATE INDEX idx_comments_item ON comments(item_id);
+
+SHOW INDEX FROM items;
+SHOW INDEX FROM ai_matches;
+
+EXPLAIN SELECT * FROM items WHERE type='lost' AND status='active';
