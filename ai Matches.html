@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>AI Matches — UniFind</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0a0c10;
+    --card:     #161b22;
+    --border:   #30363d;
+    --blue:     #58a6ff;
+    --glow:     rgba(88,166,255,0.35);
+    --green:    #00e5a0;
+    --red:      #ff6b6b;
+    --purple:   #bd93f9;
+    --dim:      #8b949e;
+    --text:     #f0f6fc;
+    --sw:       260px;
+  }
+
+  *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Outfit',sans-serif; display:flex; min-height:100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width:var(--sw); background:var(--card);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column; padding:24px;
+    position:fixed; top:0; left:0; height:100vh; z-index:10;
+  }
+  .logo { font-weight:900; font-size:1.6rem; color:var(--blue); text-decoration:none; margin-bottom:40px; display:flex; align-items:center; gap:10px; }
+  .menu-item { padding:12px 16px; margin-bottom:6px; border-radius:10px; cursor:pointer; display:flex; align-items:center; gap:12px; color:var(--dim); text-decoration:none; font-size:0.95rem; border:1px solid transparent; transition:all .25s; }
+  .menu-item:hover  { background:rgba(88,166,255,.05); color:var(--text); }
+  .menu-item.active { background:rgba(88,166,255,.1); color:var(--blue); border-color:rgba(88,166,255,.2); }
+  .divider { height:1px; background:var(--border); margin:16px 0; }
+
+  /* ── MAIN ── */
+  .main { margin-left:var(--sw); flex:1; padding:40px; }
+  .page-header { margin-bottom:36px; }
+  .page-header h1 { font-size:2rem; font-weight:900; }
+  .page-header p  { color:var(--dim); margin-top:6px; }
+
+  /* ── FILTER BAR ── */
+  .filter-bar { display:flex; gap:10px; margin-bottom:28px; flex-wrap:wrap; }
+  .fchip { padding:8px 18px; border:1px solid var(--border); background:var(--card); color:var(--dim); border-radius:20px; cursor:pointer; font-size:0.82rem; font-family:'Outfit',sans-serif; transition:all .2s; }
+  .fchip:hover { border-color:var(--blue); color:var(--text); }
+  .fchip.active { background:var(--blue); color:var(--bg); border-color:var(--blue); font-weight:700; }
+
+  /* ── MATCH CARD ── */
+  .match-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:28px;
+    margin-bottom:20px;
+    transition:border-color .25s, box-shadow .25s;
+    position:relative;
+    overflow:hidden;
+  }
+  .match-card:hover { border-color:var(--blue); box-shadow:0 0 20px var(--glow); }
+
+  /* confidence bar stripe at top */
+  .conf-stripe {
+    position:absolute; top:0; left:0; height:3px;
+    background:linear-gradient(90deg, var(--green), var(--blue));
+    transition:width .6s ease;
+  }
+
+  /* ── SCORE BADGE ── */
+  .score-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 16px; border-radius:30px;
+    font-family:'Space Mono',monospace; font-size:0.9rem; font-weight:700;
+    margin-bottom:20px;
+  }
+  .score-high   { background:rgba(0,229,160,.12); color:var(--green); border:1px solid rgba(0,229,160,.3); }
+  .score-medium { background:rgba(88,166,255,.12); color:var(--blue);  border:1px solid rgba(88,166,255,.3); }
+  .score-low    { background:rgba(255,107,107,.12); color:var(--red);   border:1px solid rgba(255,107,107,.3); }
+
+  /* ── MATCH REASON ── */
+  .match-reason {
+    font-size:0.78rem; color:var(--dim);
+    background:rgba(255,255,255,.03); border:1px solid var(--border);
+    border-radius:8px; padding:8px 14px; margin-bottom:20px;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  /* ── PAIR GRID ── */
+  .pair-grid { display:grid; grid-template-columns:1fr 60px 1fr; gap:16px; align-items:center; }
+  @media(max-width:700px) { .pair-grid { grid-template-columns:1fr; } }
+
+  .item-panel {
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--border);
+    border-radius:12px; padding:16px;
+  }
+  .item-panel.lost-panel  { border-left:3px solid var(--red); }
+  .item-panel.found-panel { border-left:3px solid var(--green); }
+
+  .panel-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; font-weight:800; margin-bottom:10px; }
+  .label-lost  { color:var(--red); }
+  .label-found { color:var(--green); }
+
+  .item-img-wrap { width:100%; height:130px; border-radius:8px; overflow:hidden; background:#21262d; display:flex; align-items:center; justify-content:center; margin-bottom:12px; font-size:2rem; }
+  .item-img-wrap img { width:100%; height:100%; object-fit:cover; }
+
+  .item-title { font-weight:700; font-size:0.95rem; margin-bottom:6px; }
+  .item-meta  { font-size:0.78rem; color:var(--dim); line-height:1.7; }
+  .item-meta span { display:block; }
+
+  .arrow-col { text-align:center; font-size:1.8rem; color:var(--blue); }
+
+  /* ── ACTION BUTTONS ── */
+  .match-actions { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+  .btn { padding:9px 20px; border-radius:8px; font-weight:700; font-size:0.82rem; border:none; cursor:pointer; font-family:'Outfit',sans-serif; transition:all .2s; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+  .btn-confirm  { background:var(--green); color:var(--bg); }
+  .btn-confirm:hover  { opacity:.85; transform:translateY(-1px); }
+  .btn-dismiss  { background:transparent; color:var(--dim); border:1px solid var(--border); }
+  .btn-dismiss:hover  { border-color:var(--red); color:var(--red); }
+  .btn-contact  { background:rgba(88,166,255,.12); color:var(--blue); border:1px solid rgba(88,166,255,.3); }
+  .btn-contact:hover  { background:rgba(88,166,255,.22); }
+
+  .badge-status { font-size:0.7rem; padding:3px 10px; border-radius:20px; font-weight:700; margin-left:8px; }
+  .bs-confirmed { background:rgba(0,229,160,.15); color:var(--green); }
+  .bs-dismissed { background:rgba(255,107,107,.15); color:var(--red); }
+  .bs-pending   { background:rgba(88,166,255,.12); color:var(--blue); }
+
+  /* ── EMPTY / LOADING ── */
+  .state-box { text-align:center; padding:80px 20px; color:var(--dim); }
+  .state-icon { font-size:3rem; margin-bottom:16px; }
+  .spinner { display:inline-block; width:28px; height:28px; border:3px solid var(--border); border-top-color:var(--blue); border-radius:50%; animation:spin .8s linear infinite; margin-bottom:14px; }
+  @keyframes spin { to{ transform:rotate(360deg); } }
+
+  /* ── TOAST ── */
+  #toast-root { position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:8px; z-index:999; }
+  .toast { background:var(--card); border:1px solid var(--border); padding:12px 18px; border-radius:10px; font-size:0.85rem; font-weight:600; max-width:300px; animation:toastIn .25s ease; }
+  @keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+  .toast-success { border-color:rgba(0,229,160,.4);  color:var(--green); }
+  .toast-error   { border-color:rgba(255,107,107,.4); color:var(--red); }
+  .toast-info    { border-color:rgba(88,166,255,.4);  color:var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <a href="Dashboard.html" class="logo">🔍 UniFind</a>
+  <div style="flex:1">
+    <a href="Dashboard.html"      class="menu-item">📊 Overview</a>
+    <a href="Items.html"          class="menu-item">📋 My Items</a>
+    <a href="Report lost.html"    class="menu-item">😟 Report Lost</a>
+    <a href="Report found.html"   class="menu-item">✅ Report Found</a>
+    <a href="AI-Matches.html"     class="menu-item active">🤖 AI Matches</a>
+    <a href="Notifications.html"  class="menu-item">🔔 CCTV</a>
+  </div>
+  <div class="divider"></div>
+  <div class="menu-item" onclick="logout()" style="color:#ff6b6b;">🚪 Logout</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <h1>🤖 AI Smart Matches</h1>
+    <p>Items automatically paired by AI based on description, category, and location similarity.</p>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <button class="fchip active" data-f="all">All Matches</button>
+    <button class="fchip" data-f="high">🟢 High Confidence (≥75%)</button>
+    <button class="fchip" data-f="medium">🔵 Medium (50–74%)</button>
+    <button class="fchip" data-f="low">🔴 Low (&lt;50%)</button>
+    <button class="fchip" data-f="mine">👤 My Items Only</button>
+  </div>
+
+  <div id="matchesContainer">
+    <div class="state-box"><div class="spinner"></div><p>Loading AI matches…</p></div>
+  </div>
+</main>
+
+<div id="toast-root"></div>
+
+<script>
+  const API  = 'http://localhost:3000/api';
+  const user = JSON.parse(localStorage.getItem('uf_user'));
+  if (!user) { window.location.href = 'Auth.html'; }
+
+  let allMatches  = [];
+  let activeFilter = 'all';
+
+  /* ── LOAD ─────────────────────────────────── */
+  async function loadMatches() {
+    try {
+      const res = await fetch(`${API}/ai/matches`);
+      if (!res.ok) throw new Error('Server error');
+      allMatches = await res.json();
+      render();
+    } catch (err) {
+      document.getElementById('matchesContainer').innerHTML = `
+        <div class="state-box">
+          <div class="state-icon">⚠️</div>
+          <p>Could not load matches. Make sure the server is running.</p>
+        </div>`;
+    }
+  }
+
+  /* ── RENDER ───────────────────────────────── */
+  function render() {
+    const container = document.getElementById('matchesContainer');
+    const userId    = user?.user_id || user?.id;
+
+    let filtered = [...allMatches];
+
+    if (activeFilter === 'high')   filtered = filtered.filter(m => m.confidence_score >= 75);
+    if (activeFilter === 'medium') filtered = filtered.filter(m => m.confidence_score >= 50 && m.confidence_score < 75);
+    if (activeFilter === 'low')    filtered = filtered.filter(m => m.confidence_score < 50);
+    if (activeFilter === 'mine')   filtered = filtered.filter(m =>
+      m.lost_id === userId || m.found_id === userId ||
+      // check by reporter if item owner not loaded — fallback
+      false
+    );
+
+    if (!filtered.length) {
+      container.innerHTML = `
+        <div class="state-box">
+          <div class="state-icon">🔍</div>
+          <h3 style="color:var(--text);margin-bottom:8px">No matches found</h3>
+          <p>AI will automatically pair items as new reports come in.</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(m => buildCard(m)).join('');
+  }
+
+  /* ── BUILD CARD ───────────────────────────── */
+  function buildCard(m) {
+    const score     = m.confidence_score;
+    const scoreClass = score >= 75 ? 'score-high' : score >= 50 ? 'score-medium' : 'score-low';
+    const scoreEmoji = score >= 75 ? '🟢' : score >= 50 ? '🔵' : '🔴';
+    const stripeW   = score + '%';
+
+    const statusBadge = m.match_status !== 'pending'
+      ? `<span class="badge-status bs-${m.match_status}">${m.match_status}</span>` : '';
+
+    const lostImg  = m.lost_image
+      ? `<img src="http://localhost:3000${m.lost_image}" alt="lost item">`
+      : `<span>😟</span>`;
+    const foundImg = m.found_image
+      ? `<img src="http://localhost:3000${m.found_image}" alt="found item">`
+      : `<span>✅</span>`;
+
+    const actionBtns = m.match_status === 'pending' ? `
+      <button class="btn btn-confirm"  onclick="confirmMatch(${m.match_id})">✅ Confirm Match</button>
+      <button class="btn btn-dismiss"  onclick="dismissMatch(${m.match_id})">✖ Not a Match</button>
+    ` : '';
+
+    return `
+      <div class="match-card" id="mc-${m.match_id}">
+        <div class="conf-stripe" style="width:${stripeW}"></div>
+
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:6px">
+          <span class="score-badge ${scoreClass}">
+            ${scoreEmoji} ${score}% Match Confidence
+          </span>
+          ${statusBadge}
+          <span style="margin-left:auto;font-size:0.75rem;color:var(--dim);font-family:'Space Mono',monospace">
+            ${timeAgo(m.created_at)}
+          </span>
+        </div>
+
+        <div class="match-reason">
+          🧠 <span>${esc(m.match_reason || 'AI semantic analysis')}</span>
+        </div>
+
+        <div class="pair-grid">
+          <!-- LOST ITEM -->
+          <div class="item-panel lost-panel">
+            <div class="panel-label label-lost">😟 Lost Item</div>
+            <div class="item-img-wrap">${lostImg}</div>
+            <div class="item-title">${esc(m.lost_title)}</div>
+            <div class="item-meta">
+              <span>📂 ${esc(m.lost_category || '—')}</span>
+              <span>📍 ${esc(m.lost_location || '—')}</span>
+              <span>👤 ${esc(m.lost_reporter || '—')}</span>
+              <span style="font-size:0.7rem;margin-top:4px;color:var(--dim)">${esc(m.lost_desc || '').slice(0,80)}${(m.lost_desc||'').length>80?'…':''}</span>
+            </div>
+          </div>
+
+          <!-- ARROW -->
+          <div class="arrow-col">⇄</div>
+
+          <!-- FOUND ITEM -->
+          <div class="item-panel found-panel">
+            <div class="panel-label label-found">✅ Found Item</div>
+            <div class="item-img-wrap">${foundImg}</div>
+            <div class="item-title">${esc(m.found_title)}</div>
+            <div class="item-meta">
+              <span>📂 ${esc(m.found_category || '—')}</span>
+              <span>📍 ${esc(m.found_location || '—')}</span>
+              <span>👤 ${esc(m.found_reporter || '—')}</span>
+              <span style="font-size:0.7rem;margin-top:4px;color:var(--dim)">${esc(m.found_desc || '').slice(0,80)}${(m.found_desc||'').length>80?'…':''}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="match-actions">
+          ${actionBtns}
+          <a href="index.html" class="btn btn-contact">🔍 View on Browse Page</a>
+        </div>
+      </div>`;
+  }
+
+  /* ── CONFIRM MATCH ────────────────────────── */
+  async function confirmMatch(matchId) {
+    try {
+      const res = await fetch(`${API}/ai/matches/${matchId}/confirm`, { method:'PATCH' });
+      if (!res.ok) throw new Error();
+      toast('✅ Match confirmed! Both items marked as resolved.', 'success');
+      await loadMatches();
+    } catch { toast('Error confirming match.', 'error'); }
+  }
+
+  /* ── DISMISS MATCH ────────────────────────── */
+  async function dismissMatch(matchId) {
+    try {
+      const res = await fetch(`${API}/ai/matches/${matchId}/dismiss`, { method:'PATCH' });
+      if (!res.ok) throw new Error();
+      toast('Match dismissed. Items set back to active.', 'info');
+      await loadMatches();
+    } catch { toast('Error dismissing match.', 'error'); }
+  }
+
+  /* ── FILTERS ──────────────────────────────── */
+  document.querySelectorAll('.fchip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.fchip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeFilter = chip.dataset.f;
+      render();
+    });
+  });
+
+  /* ── HELPERS ──────────────────────────────── */
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function timeAgo(dateStr) {
+    const d = Math.floor((Date.now() - new Date(dateStr)) / 60000);
+    if (d < 1)  return 'just now';
+    if (d < 60) return `${d}m ago`;
+    const h = Math.floor(d/60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h/24)}d ago`;
+  }
+
+  function toast(msg, type='info') {
+    const root = document.getElementById('toast-root');
+    const el = document.createElement('div');
+    el.className   = `toast toast-${type}`;
+    el.textContent = msg;
+    root.appendChild(el);
+    setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 4000);
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'Auth.html';
+  }
+
+  // ── INIT ───────────────────────────────────
+  loadMatches();
+</script>
+</body>
+</html>

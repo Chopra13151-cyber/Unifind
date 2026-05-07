@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>UniFind — University Lost & Found with AI Matching</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #0a0c10;
+    --card-dark: #161b22;
+    --border-dark: #30363d;
+    --accent-blue: #58a6ff;
+    --glow-blue: rgba(88, 166, 255, 0.4);
+    --success: #00e5a0;
+    --danger: #ff6b6b;
+    --text-main: #f0f6fc;
+    --text-dim: #8b949e;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Outfit', sans-serif; line-height: 1.6; }
+
+  /* NAVBAR */
+  nav { background: rgba(22,27,34,0.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-dark); padding: 16px 24px; position: sticky; top: 0; z-index: 200; }
+  .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .nav-logo { font-weight: 900; font-size: 1.5rem; color: var(--accent-blue); text-decoration: none; }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a { color: var(--text-main); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--accent-blue); }
+  .auth-buttons { display: flex; gap: 12px; }
+  .btn-auth { padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: all 0.3s; border: 1px solid var(--border-dark); background: transparent; color: var(--text-main); cursor: pointer; }
+  .btn-auth:hover { border-color: var(--accent-blue); background: rgba(88,166,255,0.1); }
+  .btn-signup { background: var(--accent-blue); color: var(--bg-dark); border: none; }
+  .btn-signup:hover { box-shadow: 0 0 15px var(--glow-blue); transform: translateY(-2px); }
+
+  /* HERO */
+  .hero { padding: 120px 24px 80px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .hero-title { font-weight: 900; letter-spacing: -3px; font-size: clamp(3.5rem,10vw,5.5rem); margin: 20px 0; }
+  .hero-sub { max-width: 700px; color: var(--text-dim); margin-bottom: 30px; font-size: 1.1rem; line-height: 1.8; }
+  .hero-actions { display: flex; gap: 20px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+  .hero-btn { padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 10px; border: 1px solid var(--border-dark); background: var(--card-dark); color: var(--text-main); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
+  .hero-btn:hover { transform: translateY(-5px); border-color: var(--accent-blue); box-shadow: 0 0 25px var(--glow-blue); background: #1c2128; }
+  .hero-btn.primary { background: var(--accent-blue); color: var(--bg-dark); border: none; }
+  .hero-btn.success { background: var(--success); color: var(--bg-dark); border: none; }
+  .features-badges { margin-top: 38px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .badge { font-size: 0.75rem; color: var(--text-main); background: var(--card-dark); border: 1px solid var(--border-dark); padding: 5px 14px; border-radius: 99px; }
+
+  /* STATS */
+  .stats-ribbon { background: rgba(22,27,34,0.5); border-top: 1px solid var(--border-dark); border-bottom: 1px solid var(--border-dark); padding: 30px 0; margin: 40px 0; }
+  .stats-inner { max-width: 1400px; margin: 0 auto; display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+  .stat-pill { text-align: center; }
+  .stat-val { color: var(--accent-blue); text-shadow: 0 0 10px var(--glow-blue); font-size: 2rem; font-weight: 800; }
+  .stat-lbl { color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }
+
+  /* CONTAINER */
+  .container { max-width: 1400px; padding: 60px 24px; margin: 0 auto; }
+  .section-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 40px; text-align: center; }
+
+  /* SEARCH */
+  .search-bar { max-width: 800px; margin: 0 auto 40px; background: rgba(22,27,34,0.8); backdrop-filter: blur(10px); border: 1px solid var(--border-dark); padding: 8px; border-radius: 50px; display: flex; gap: 10px; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .search-bar:focus-within { border-color: var(--accent-blue); box-shadow: 0 0 15px var(--glow-blue); transform: translateY(-2px); }
+  .search-input { background: transparent; border: none; color: white; padding: 12px 25px; font-size: 1rem; flex: 1; outline: none; font-family: 'Outfit', sans-serif; }
+  .search-input::placeholder { color: var(--text-dim); }
+  .search-btn { background: var(--accent-blue); color: var(--bg-dark); border: none; border-radius: 30px; padding: 10px 20px; font-weight: 700; cursor: pointer; transition: all 0.3s; font-family: 'Outfit', sans-serif; }
+  .search-btn:hover { transform: translateY(-2px); box-shadow: 0 0 15px var(--glow-blue); }
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; align-items: center; justify-content: center; }
+  .filter-chip { padding: 8px 16px; border: 1px solid var(--border-dark); background: var(--card-dark); color: var(--text-main); border-radius: 20px; cursor: pointer; transition: all 0.3s; font-size: 0.85rem; font-family: 'Outfit', sans-serif; }
+  .filter-chip:hover { border-color: var(--accent-blue); }
+  .filter-chip.active { background: var(--accent-blue); color: var(--bg-dark); border-color: var(--accent-blue); }
+
+  /* ITEMS GRID */
+  .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
+  .card { background: var(--card-dark); border: 1px solid var(--border-dark); border-radius: 14px; overflow: hidden; transition: transform 0.3s ease, border-color 0.3s ease; display: flex; flex-direction: column; }
+  .card:hover { border-color: var(--accent-blue); transform: scale(1.02) translateY(-4px); box-shadow: 0 0 20px var(--glow-blue); }
+  .card-img { width: 100%; height: 190px; background: #21262d; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative; overflow: hidden; }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .ai-badge { position: absolute; top: 10px; right: 10px; background: var(--accent-blue); color: var(--bg-dark); padding: 4px 10px; font-size: 0.65rem; font-weight: 900; border-radius: 4px; letter-spacing: 0.5px; }
+  .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+  .card-badges { display: flex; justify-content: space-between; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
+  .badge-type { font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; font-weight: 600; }
+  .badge-lost { background: #442d2d; color: #ff6b6b; }
+  .badge-found { background: #23392d; color: #00e5a0; }
+  .card-title { font-size: 1rem; margin-bottom: 6px; font-weight: 700; }
+  .card-desc { font-size: 0.83rem; color: var(--text-dim); margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
+  .card-meta { display: flex; gap: 10px; font-size: 0.75rem; color: var(--accent-blue); flex-wrap: wrap; }
+  .card-time { font-size: 0.7rem; color: var(--text-dim); margin-top: 10px; font-family: 'Space Mono', monospace; }
+
+  /* COMMENT BUTTON */
+  .card-footer { padding: 12px 18px; border-top: 1px solid var(--border-dark); display: flex; align-items: center; justify-content: space-between; }
+  .comment-btn { background: transparent; border: 1px solid var(--border-dark); color: var(--text-dim); padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+  .comment-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(88,166,255,0.05); }
+  .comment-count { font-size: 0.72rem; color: var(--text-dim); font-family: 'Space Mono', monospace; }
+
+  /* COMMENTS PANEL (inline under card) */
+  .comments-panel { border-top: 1px solid var(--border-dark); padding: 14px 18px; background: rgba(0,0,0,0.2); display: none; }
+  .comments-panel.open { display: block; }
+  .comments-list { max-height: 200px; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .comment-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border-dark); border-radius: 8px; padding: 10px 12px; }
+  .comment-author { font-size: 0.75rem; font-weight: 700; color: var(--accent-blue); margin-bottom: 2px; }
+  .comment-body { font-size: 0.82rem; color: var(--text-main); white-space: pre-wrap; }
+  .comment-time { font-size: 0.68rem; color: var(--text-dim); margin-top: 4px; font-family: 'Space Mono', monospace; }
+  .no-comments { font-size: 0.82rem; color: var(--text-dim); text-align: center; padding: 10px 0; }
+  .inline-comment-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; border-top: 1px solid var(--border-dark); padding-top: 10px; }
+  .inline-comment-row { display: flex; gap: 8px; }
+  .inline-input { flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-dark); border-radius: 8px; color: var(--text-main); font-family: 'Outfit', sans-serif; font-size: 0.82rem; outline: none; transition: border-color 0.2s; }
+  .inline-input:focus { border-color: var(--accent-blue); }
+  .inline-input::placeholder { color: var(--text-dim); }
+  .inline-textarea { width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-dark); border-radius: 8px; color: var(--text-main); font-family: 'Outfit', sans-serif; font-size: 0.82rem; outline: none; resize: none; min-height: 60px; transition: border-color 0.2s; }
+  .inline-textarea:focus { border-color: var(--accent-blue); }
+  .inline-textarea::placeholder { color: var(--text-dim); }
+  .inline-submit { padding: 8px 16px; background: var(--accent-blue); border: none; color: var(--bg-dark); border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; font-family: 'Outfit', sans-serif; white-space: nowrap; transition: opacity 0.2s; }
+  .inline-submit:hover { opacity: 0.85; }
+  .inline-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* AI MATCHES SECTION */
+  .ai-section { background: linear-gradient(135deg, rgba(88,166,255,0.05) 0%, rgba(0,229,160,0.05) 100%); border: 1px solid rgba(88,166,255,0.2); border-radius: 16px; padding: 40px; margin-top: 20px; }
+  .ai-section-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+  .ai-section-sub { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 28px; }
+  .ai-match-pair { display: grid; grid-template-columns: 1fr 40px 1fr; gap: 16px; align-items: center; background: var(--card-dark); border: 1px solid rgba(88,166,255,0.25); border-radius: 12px; padding: 20px; margin-bottom: 16px; transition: border-color 0.2s; }
+  .ai-match-pair:hover { border-color: var(--accent-blue); }
+  .match-card { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 14px; }
+  .match-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
+  .match-label.lost { color: var(--danger); }
+  .match-label.found { color: var(--success); }
+  .match-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+  .match-meta { font-size: 0.75rem; color: var(--text-dim); }
+  .match-arrow { text-align: center; font-size: 1.4rem; color: var(--accent-blue); }
+  .match-score { display: inline-flex; align-items: center; gap: 4px; background: rgba(88,166,255,0.12); color: var(--accent-blue); font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-top: 8px; font-family: 'Space Mono', monospace; }
+
+  /* LOADING */
+  .loading-state { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--text-dim); }
+  .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--border-dark); border-top-color: var(--accent-blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 14px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty-state { grid-column: 1/-1; padding: 60px 20px; text-align: center; }
+  .empty-icon { font-size: 3rem; margin-bottom: 16px; }
+
+  /* MODAL */
+  .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--card-dark); border: 1px solid var(--border-dark); border-radius: 16px; padding: 32px; width: 100%; max-width: 500px; animation: modalIn 0.25s ease; }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: none; } }
+  .modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 4px; }
+  .modal-item-name { font-size: 0.85rem; color: var(--accent-blue); font-style: italic; margin-bottom: 16px; }
+  .modal-info { background: rgba(88,166,255,0.06); border: 1px solid rgba(88,166,255,0.15); border-radius: 8px; padding: 12px 16px; font-size: 0.82rem; color: var(--text-dim); margin-bottom: 20px; line-height: 1.6; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-input, .form-textarea { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-dark); border-radius: 8px; color: var(--text-main); font-family: 'Outfit', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+  .form-input:focus, .form-textarea:focus { border-color: var(--accent-blue); }
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--text-dim); }
+  .form-textarea { resize: vertical; min-height: 100px; }
+  .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+  .btn-cancel { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--border-dark); color: var(--text-dim); border-radius: 8px; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 600; transition: all 0.2s; }
+  .btn-cancel:hover { border-color: var(--danger); color: var(--danger); }
+  .btn-submit { flex: 2; padding: 10px; background: var(--accent-blue); border: none; color: var(--bg-dark); border-radius: 8px; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.9rem; transition: all 0.2s; }
+  .btn-submit:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* TOAST */
+  #toast-root { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 9999; }
+  .toast { background: var(--card-dark); border: 1px solid var(--border-dark); padding: 12px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; max-width: 300px; animation: toastIn 0.25s ease; }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+  .toast-success { border-color: rgba(0,229,160,0.4); color: var(--success); }
+  .toast-error   { border-color: rgba(255,107,107,0.4); color: var(--danger); }
+  .toast-info    { border-color: rgba(88,166,255,0.4);  color: var(--accent-blue); }
+
+  footer { background: rgba(22,27,34,0.5); border-top: 1px solid var(--border-dark); padding: 40px 24px; text-align: center; color: var(--text-dim); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeUp 0.5s ease both; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">🔍 UniFind</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="#browse">Search</a>
+      <a href="#about">About</a>
+      <div class="auth-buttons">
+        <a href="Auth.html" class="btn-auth" id="nav-login">Login</a>
+        <a href="Auth.html" class="btn-auth btn-signup" id="nav-signup">Sign Up</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1 class="hero-title">UniFind</h1>
+  <p class="hero-sub">AI-powered lost & found platform for your university. Lost something? Found something? Our AI instantly matches items to reunite belongings with their owners faster.</p>
+  <div class="hero-actions">
+    <a href="Auth.html" class="hero-btn primary"><span>😟</span> Report Lost Item</a>
+    <a href="Auth.html" class="hero-btn success"><span>✅</span> Report Found Item</a>
+    <a href="#browse" class="hero-btn"><span>🔍</span> Current Items</a>
+  </div>
+  <div class="features-badges">
+    <span class="badge">🤖 AI Matching</span>
+    <span class="badge">📷 Image Search</span>
+    <span class="badge">📹 CCTV Requests</span>
+    <span class="badge">💬 Community Comments</span>
+  </div>
+</section>
+
+<div class="stats-ribbon">
+  <div class="stats-inner">
+    <div class="stat-pill"><div class="stat-val" id="statLost">–</div><div class="stat-lbl">Lost Reports</div></div>
+    <div class="stat-pill"><div class="stat-val" id="statFound" style="color:#00e5a0">–</div><div class="stat-lbl">Found Items</div></div>
+    <div class="stat-pill"><div class="stat-val" id="statMatched" style="color:#bd93f9">–</div><div class="stat-lbl">AI Matched</div></div>
+  </div>
+</div>
+
+<div class="container" id="browse">
+  <h2 class="section-title">See Information of Current Items</h2>
+  <div class="search-bar">
+    <input class="search-input" id="searchInput" type="text" placeholder="🔍 Search items — try 'blue wallet', 'electronics', 'Block C'…"/>
+    <button class="search-btn" id="searchBtn">Search</button>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-chip active" data-filter="all">All Items</button>
+    <button class="filter-chip" data-filter="lost">Lost Only</button>
+    <button class="filter-chip" data-filter="found">Found Only</button>
+    <button class="filter-chip" data-filter="matched">AI Matched 🤖</button>
+    <button class="filter-chip" data-filter="resolved">Resolved ✓</button>
+  </div>
+  <div class="items-grid" id="itemsGrid">
+    <div class="loading-state"><div class="spinner"></div><p>Loading items from database…</p></div>
+  </div>
+</div>
+
+<!-- AI MATCHES — shown only when matched items exist in DB -->
+<!-- <div class="container" id="ai-matches-section" style="padding-top:0; display:none;">
+  <div class="ai-section">
+    <div class="ai-section-title">🤖 AI Smart Matches</div>
+    <div class="ai-section-sub">These lost & found items have been automatically paired by our AI based on description similarity.</div>
+    <div id="aiMatchesList"></div>
+  </div>
+</div> -->
+
+<footer id="about">
+  <p>© 2025 UniFind — AI-Powered Campus Lost & Found Platform</p>
+  <p style="margin-top:12px;font-size:0.85rem;">Helping students and staff reunite with their belongings</p>
+</footer>
+
+
+<div id="toast-root"></div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+  let allItems = [];
+  let activeFilter = 'all';
+  let searchQuery  = '';
+
+  /* ── INIT ───────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', async () => {
+    updateNav();
+    await loadItems();
+    setupFilters();
+    setupSearch();
+    renderAIMatches();
+  });
+
+  function updateNav() {
+    const user = JSON.parse(localStorage.getItem('uf_user'));
+    if (user) {
+      const loginBtn  = document.getElementById('nav-login');
+      const signupBtn = document.getElementById('nav-signup');
+      loginBtn.textContent  = 'Dashboard';
+      loginBtn.href         = 'Dashboard.html';
+      signupBtn.textContent = 'My Items';
+      signupBtn.href        = 'Items.html';
+    }
+  }
+
+  /* ── LOAD ALL ITEMS FROM DB ─────────────── */
+  async function loadItems() {
+    try {
+      const res = await fetch(`${API}/items/all`);
+      if (!res.ok) throw new Error(`Server responded ${res.status}`);
+      allItems = await res.json();
+      updateStats();
+      renderItems();
+    } catch (err) {
+      document.getElementById('itemsGrid').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <h3>Could not load items</h3>
+          <p style="color:var(--text-dim);margin-top:8px;">
+            Make sure your server is running:<br>
+            <code style="color:var(--accent-blue);font-family:'Space Mono',monospace">node server.js</code>
+            then open <code style="color:var(--accent-blue);font-family:'Space Mono',monospace">http://localhost:3000/index.html</code>
+          </p>
+        </div>`;
+    }
+  }
+
+  /* ── STATS FROM LIVE DATA ───────────────── */
+  function updateStats() {
+    countUp(document.getElementById('statLost'),     allItems.filter(i => i.type === 'lost').length);
+    countUp(document.getElementById('statFound'),    allItems.filter(i => i.type === 'found').length);
+    countUp(document.getElementById('statMatched'),  allItems.filter(i => i.status === 'matched').length);
+    countUp(document.getElementById('statResolved'), allItems.filter(i => i.status === 'resolved').length);
+  }
+
+  /* ── RENDER ITEM CARDS ──────────────────── */
+  function renderItems() {
+    const grid = document.getElementById('itemsGrid');
+    const q = searchQuery.toLowerCase();
+
+    const filtered = allItems.filter(item => {
+      if (activeFilter === 'lost'     && item.type !== 'lost')       return false;
+      if (activeFilter === 'found'    && item.type !== 'found')      return false;
+      if (activeFilter === 'matched'  && item.status !== 'matched')  return false;
+      if (activeFilter === 'resolved' && item.status !== 'resolved') return false;
+      if (q && !['title','description','location','category'].some(k =>
+        (item[k] || '').toLowerCase().includes(q)
+      )) return false;
+      return true;
+    });
+
+    if (!filtered.length) {
+      grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><h3>No items found</h3><p>Try adjusting your filters or search.</p></div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map((item, i) => {
+      const isLost    = item.type === 'lost';
+      const isMatched = item.status === 'matched';
+      const imgHtml   = item.image_url
+        ? `<img src="http://localhost:3000${item.image_url}" alt="${escHtml(item.title)}" loading="lazy">`
+        : `<span>${isLost ? '😟' : '✅'}</span>`;
+      const statusLabel = { active:'open', matched:'matched', resolved:'resolved' }[item.status] || item.status;
+      const commentCount = item.comment_count || 0;
+
+      return `
+        <div class="card fade-in" style="animation-delay:${i * 0.04}s" id="card-${item.item_id}">
+          <div class="card-img">
+            ${imgHtml}
+            ${isMatched ? '<div class="ai-badge">🤖 AI MATCH</div>' : ''}
+          </div>
+          <div class="card-body">
+            <div class="card-badges">
+              <span class="badge-type ${isLost ? 'badge-lost' : 'badge-found'}">${isLost ? '😟 Lost' : '✅ Found'}</span>
+              <span class="badge-type" style="background:#30363d;color:var(--text-dim)">${statusLabel}</span>
+            </div>
+            <h3 class="card-title">${escHtml(item.title)}</h3>
+            <p class="card-desc">${escHtml(item.description || '')}</p>
+            <div class="card-meta">
+              ${item.location ? `<span>📍 ${escHtml(item.location)}</span>` : ''}
+              ${item.category ? `<span>📂 ${escHtml(item.category)}</span>` : ''}
+            </div>
+            <p class="card-time">${item.reported_at ? formatAgo(item.reported_at) : ''}</p>
+          </div>
+          <div class="card-footer">
+            <button class="comment-btn" onclick="toggleComments(${item.item_id})">
+              💬 Comments
+              <span id="ccount-${item.item_id}" style="background:rgba(88,166,255,0.15);color:var(--accent-blue);border-radius:10px;padding:1px 7px;margin-left:2px;font-family:'Space Mono',monospace">${commentCount}</span>
+            </button>
+          </div>
+          <div class="comments-panel" id="cpanel-${item.item_id}">
+            <div class="comments-list" id="clist-${item.item_id}">
+              <div class="no-comments">Click to load comments…</div>
+            </div>
+            <div class="inline-comment-form">
+              <div class="inline-comment-row">
+                <input class="inline-input" id="cname-${item.item_id}" placeholder="Your name *" />
+                <input class="inline-input" id="cphone-${item.item_id}" placeholder="Phone *" style="max-width:140px" />
+              </div>
+              <textarea class="inline-textarea" id="ctext-${item.item_id}" placeholder="Share what you know — visible to everyone on this page…"></textarea>
+              <div style="display:flex;justify-content:flex-end">
+                <button class="inline-submit" id="csubmit-${item.item_id}" onclick="submitInlineComment(${item.item_id})">Post Comment →</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  /* ── AI MATCHES SECTION ─────────────────── */
+  function renderAIMatches() {
+    const matched = allItems.filter(i => i.status === 'matched');
+    const section = document.getElementById('ai-matches-section');
+    if (!matched.length) { section.style.display = 'none'; return; }
+
+    section.style.display = 'block';
+    const lost  = matched.filter(i => i.type === 'lost');
+    const found = matched.filter(i => i.type === 'found');
+    const usedFound = new Set();
+    const pairs = [];
+
+    lost.forEach(l => {
+      let f = found.find(x => !usedFound.has(x.item_id) && x.category === l.category);
+      if (!f) f = found.find(x => !usedFound.has(x.item_id));
+      if (f) { usedFound.add(f.item_id); pairs.push({ lost: l, found: f }); }
+      else pairs.push({ lost: l, found: null });
+    });
+    found.filter(f => !usedFound.has(f.item_id)).forEach(f => pairs.push({ lost: null, found: f }));
+
+    document.getElementById('aiMatchesList').innerHTML = pairs.map(p => `
+      <div class="ai-match-pair">
+        <div class="match-card">
+          <div class="match-label lost">😟 Lost Item</div>
+          ${p.lost ? `
+            <div class="match-title">${escHtml(p.lost.title)}</div>
+            <div class="match-meta">📍 ${escHtml(p.lost.location||'—')} &nbsp;·&nbsp; 📂 ${escHtml(p.lost.category||'—')}</div>
+            <div class="match-score">🤖 AI Matched</div>` : `<div style="color:var(--text-dim);font-size:0.82rem">—</div>`}
+        </div>
+        <div class="match-arrow">⇄</div>
+        <div class="match-card">
+          <div class="match-label found">✅ Found Item</div>
+          ${p.found ? `
+            <div class="match-title">${escHtml(p.found.title)}</div>
+            <div class="match-meta">📍 ${escHtml(p.found.location||'—')} &nbsp;·&nbsp; 📂 ${escHtml(p.found.category||'—')}</div>
+            <div class="match-score">🤖 AI Matched</div>` : `<div style="color:var(--text-dim);font-size:0.82rem">—</div>`}
+        </div>
+      </div>`).join('');
+  }
+
+  /* ── INLINE COMMENTS ────────────────────── */
+  const loadedPanels = new Set(); // track which item panels have fetched data
+
+  async function toggleComments(itemId) {
+    const panel = document.getElementById(`cpanel-${itemId}`);
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open');
+
+    if (!isOpen && !loadedPanels.has(itemId)) {
+      loadedPanels.add(itemId);
+      await loadComments(itemId);
+      // Pre-fill name if logged in
+      const user = JSON.parse(localStorage.getItem('uf_user'));
+      if (user) {
+        const nameEl = document.getElementById(`cname-${itemId}`);
+        if (nameEl && !nameEl.value) nameEl.value = user.full_name || user.name || '';
+      }
+    }
+  }
+
+  async function loadComments(itemId) {
+    const list = document.getElementById(`clist-${itemId}`);
+    try {
+      const res = await fetch(`${API}/items/comments/${itemId}`);
+      const comments = await res.json();
+      if (!comments.length) {
+        list.innerHTML = `<div class="no-comments">No comments yet — be the first!</div>`;
+        return;
+      }
+      list.innerHTML = comments.map(c => `
+        <div class="comment-item">
+          <div class="comment-author">${escHtml(c.commenter_name || 'Anonymous')}</div>
+          <div class="comment-body">${escHtml(c.comment_text)}</div>
+          <div class="comment-time">${formatAgo(c.created_at)}</div>
+        </div>`).join('');
+    } catch {
+      list.innerHTML = `<div class="no-comments" style="color:var(--danger)">Could not load comments.</div>`;
+    }
+  }
+
+  async function submitInlineComment(itemId) {
+    const name  = document.getElementById(`cname-${itemId}`).value.trim();
+    const phone = document.getElementById(`cphone-${itemId}`).value.trim();
+    const text  = document.getElementById(`ctext-${itemId}`).value.trim();
+    const btn   = document.getElementById(`csubmit-${itemId}`);
+
+    if (!name || !phone || !text) { toast('Please fill in your name, phone, and message.', 'error'); return; }
+
+    const fullComment = `[${name} | 📞 ${phone}]\n${text}`;
+    const user = JSON.parse(localStorage.getItem('uf_user'));
+
+    btn.disabled    = true;
+    btn.textContent = 'Posting…';
+
+    try {
+      const res = await fetch(`${API}/items/comment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          item_id:      itemId,
+          user_id:      user ? (user.id || user.user_id) : null,
+          comment_text: fullComment
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed');
+      }
+      // Clear form
+      document.getElementById(`ctext-${itemId}`).value  = '';
+      document.getElementById(`cphone-${itemId}`).value = '';
+      // Refresh comment list + count
+      loadedPanels.delete(itemId); // force reload
+      await loadComments(itemId);
+      loadedPanels.add(itemId);
+      // Bump visible count badge
+      const countEl = document.getElementById(`ccount-${itemId}`);
+      if (countEl) countEl.textContent = parseInt(countEl.textContent || 0) + 1;
+      toast('✅ Comment posted! Everyone can see it.', 'success');
+    } catch (err) {
+      toast(err.message || 'Server error. Try again.', 'error');
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Post Comment →';
+    }
+  }
+
+  /* ── FILTERS & SEARCH ───────────────────── */
+  function setupFilters() {
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeFilter = chip.dataset.filter;
+        renderItems();
+      });
+    });
+  }
+
+  function setupSearch() {
+    const run = () => { searchQuery = document.getElementById('searchInput').value.trim(); renderItems(); };
+    document.getElementById('searchBtn').addEventListener('click', run);
+    document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+  }
+
+  /* ── HELPERS ────────────────────────────── */
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function formatAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)  return 'just now';
+    if (m < 60) return `${m} min ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h/24)}d ago`;
+  }
+
+  function countUp(el, target, duration = 1200) {
+    if (!el) return;
+    if (!target) { el.textContent = 0; return; }
+    const start = Date.now();
+    const tick = () => {
+      const p = Math.min((Date.now() - start) / duration, 1);
+      el.textContent = Math.round((1 - Math.pow(1 - p, 3)) * target);
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function toast(msg, type = 'info') {
+    const root = document.getElementById('toast-root');
+    const el   = document.createElement('div');
+    el.className    = `toast toast-${type}`;
+    el.textContent  = msg;
+    root.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 4000);
+  }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Report Lost Item — UniFind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #0a0c10;
+    --card-dark: #161b22;
+    --border-dark: #30363d;
+    --accent-blue: #58a6ff;
+    --glow-blue: rgba(88, 166, 255, 0.4);
+    --text-main: #f0f6fc;
+    --text-dim: #8b949e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--bg-dark) !important;
+    color: var(--text-main);
+    font-family: 'Outfit', sans-serif;
+    line-height: 1.6;
+  }
+
+  /* ── NAVBAR ────────────────────────────────────── */
+  nav {
+    background: rgba(22, 27, 34, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-dark);
+    padding: 16px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-logo {
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: var(--accent-blue);
+    text-decoration: none;
+  }
+
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { color: var(--text-main); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--accent-blue); }
+
+  /* ── CONTENT ────────────────────────────────────── */
+  .page-header { padding: 60px 24px; text-align: center; border-bottom: 1px solid var(--border-dark); }
+  .page-title { font-weight: 900; font-size: clamp(2.5rem, 8vw, 4rem); letter-spacing: -2px; margin-bottom: 16px; }
+  .page-subtitle { color: var(--text-dim); max-width: 600px; margin: 0 auto; }
+
+  .container { max-width: 800px; margin: 0 auto; padding: 60px 24px; }
+  .form-group { margin-bottom: 28px; }
+  .form-label { display: block; margin-bottom: 12px; font-weight: 600; font-size: 0.95rem; }
+
+  .form-input, .form-textarea, .form-select {
+    width: 100%; padding: 12px 16px; background: var(--card-dark);
+    border: 1px solid var(--border-dark); border-radius: 8px;
+    color: var(--text-main); font-family: 'Outfit', sans-serif; transition: all 0.3s ease;
+  }
+
+  .form-input:focus, .form-textarea:focus, .form-select:focus {
+    outline: none; border-color: var(--accent-blue); box-shadow: 0 0 12px var(--glow-blue);
+  }
+
+  .form-textarea { resize: vertical; min-height: 120px; }
+
+  .file-input-label {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding: 32px; border: 2px dashed var(--border-dark); border-radius: 12px;
+    background: rgba(22, 27, 34, 0.5); cursor: pointer; color: var(--text-dim);
+  }
+
+  .file-input-label input { display: none; }
+
+  .btn-group { display: flex; gap: 16px; margin-top: 40px; flex-wrap: wrap; }
+  .btn { padding: 12px 28px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s; flex: 1; }
+  .btn-primary { background: var(--accent-blue); color: var(--bg-dark); }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 0 20px var(--glow-blue); }
+  .btn-secondary { background: transparent; color: var(--text-main); border: 1px solid var(--border-dark); text-align: center; text-decoration: none; }
+
+  .helper-text { font-size: 0.8rem; color: var(--text-dim); margin-top: 6px; }
+  .required { color: #ff6b6b; }
+</style>
+</head>
+
+<body>
+
+<nav>
+  <div class="nav-container">
+    <a href="Dashboard.html" class="nav-logo">UniFind</a>
+    <div class="nav-links">
+      <a href="Dashboard.html">Dashboard</a>
+      <a href="Report lost.html" style="color: var(--accent-blue);">Report Lost</a>
+      <a href="Report found.html">Report Found</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1 class="page-title">😟 Report Lost Item</h1>
+  <p class="page-subtitle">Provide details below. Our system will automatically notify you if a match is found in the database.</p>
+</div>
+
+<div class="container">
+  <form id="lostForm">
+    
+    <div class="form-group">
+      <label class="form-label">Item Title <span class="required">*</span></label>
+      <input type="text" class="form-input" id="title" placeholder="e.g., Blue Insulated Water Bottle" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Category <span class="required">*</span></label>
+      <select class="form-select" id="category" required>
+        <option value="">Select a category</option>
+        <option>Electronics</option>
+        <option>Clothing</option>
+        <option>Stationery</option>
+        <option>Keys</option>
+        <option>Wallet/Bag</option>
+        <option>Books</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Detailed Description <span class="required">*</span></label>
+      <textarea class="form-textarea" id="description" placeholder="Describe unique marks, brand, color, etc." required></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Location Lost <span class="required">*</span></label>
+      <input type="text" class="form-input" id="location" placeholder="e.g., Library 2nd Floor" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Date & Time Lost</label>
+      <input type="datetime-local" class="form-input" id="lostDateTime">
+    </div>
+
+    <div class="btn-group">
+      <button type="submit" id="submitBtn" class="btn btn-primary">Submit Report</button>
+      <a href="Dashboard.html" class="btn btn-secondary">Cancel</a>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  // 1. Get user data from local storage
+  const user = JSON.parse(localStorage.getItem('uf_user'));
+
+  // Redirect if not logged in
+  if (!user) {
+    alert("Please log in to report an item.");
+    window.location.href = 'Auth.html';
+  }
+
+  document.getElementById('lostForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.innerText = "Submited";
+    submitBtn.disabled = true;
+
+    // 2. Prepare the data matching your MySQL columns
+    const reportData = {
+      user_id: user.user_id || user.id, // Handles different naming conventions
+      title: document.getElementById('title').value,
+      category: document.getElementById('category').value,
+      description: document.getElementById('description').value,
+      location: document.getElementById('location').value,
+      type: 'lost' // Explicitly set as 'lost'
+    };
+
+    console.log('Sending data:', reportData);
+
+    try {
+      // 3. Send data to your backend API
+      const response = await fetch('http://localhost:3000/api/items/report', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(reportData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('✅ Report submitted successfully!');
+        window.location.href = 'Dashboard.html'; // Redirect to see updates
+      } else {
+        alert('❌ Error: ' + (result.message || 'Failed to submit report'));
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      alert('❌ Server is unreachable. Please ensure node server.js is running.');
+    } finally {
+      submitBtn.innerText = "Submit Report";
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>

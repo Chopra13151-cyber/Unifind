@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>CCTV Requests — UniFind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark:    #0a0c10;
+      --card-dark:  #161b22;
+      --border:     #30363d;
+      --blue:       #58a6ff;
+      --glow:       rgba(88,166,255,.35);
+      --green:      #00e5a0;
+      --red:        #ff6b6b;
+      --orange:     #ffa500;
+      --purple:     #bd93f9;
+      --text:       #f0f6fc;
+      --dim:        #8b949e;
+      --sidebar-w:  260px;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ════════════════════════════════════════
+       SIDEBAR
+    ════════════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--card-dark);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      font-weight: 900;
+      font-size: 1.5rem;
+      color: var(--blue);
+      margin-bottom: 36px;
+      padding: 0 8px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      color: var(--dim);
+      text-decoration: none;
+      font-size: .93rem;
+      border: 1px solid transparent;
+      transition: all .25s;
+      margin-bottom: 4px;
+      cursor: pointer;
+    }
+
+    .nav-link:hover { background: rgba(88,166,255,.07); color: var(--text); }
+
+    .nav-link.active {
+      background: rgba(88,166,255,.15);
+      color: var(--blue);
+      border-color: rgba(88,166,255,.3);
+    }
+
+    .nav-link.danger { color: var(--red); }
+    .nav-link.danger:hover { background: rgba(255,107,107,.07); }
+
+    .sidebar-divider { height:1px; background: var(--border); margin: 12px 0; }
+
+    .badge {
+      margin-left: auto;
+      background: var(--red);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      min-width: 22px;
+      text-align: center;
+    }
+
+    /* ════════════════════════════════════════
+       MAIN
+    ════════════════════════════════════════ */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: rgba(22,27,34,.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 36px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-icon { font-size: 1.6rem; }
+
+    .topbar h1 {
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: -.5px;
+    }
+
+    .topbar-sub {
+      font-size: .82rem;
+      color: var(--dim);
+      margin-left: auto;
+    }
+
+    /* ════════════════════════════════════════
+       TAB BAR
+    ════════════════════════════════════════ */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--card-dark);
+      padding: 0 36px;
+    }
+
+    .tab-btn {
+      padding: 16px 26px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--dim);
+      font-family: 'Outfit', sans-serif;
+      font-size: .93rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .25s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: -1px;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+
+    .tab-btn.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+    }
+
+    .tab-badge {
+      background: var(--red);
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 8px;
+    }
+
+    /* ════════════════════════════════════════
+       PANELS
+    ════════════════════════════════════════ */
+    .panels { flex: 1; padding: 36px; max-width: 860px; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ════════════════════════════════════════
+       SECTION HEADER
+    ════════════════════════════════════════ */
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .section-sub {
+      color: var(--dim);
+      font-size: .88rem;
+      margin-bottom: 28px;
+    }
+
+    /* ════════════════════════════════════════
+       FORM  (Tab 1 – Request)
+    ════════════════════════════════════════ */
+    .form-card {
+      background: var(--card-dark);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    .form-row { margin-bottom: 22px; }
+
+    .form-row label {
+      display: block;
+      font-weight: 600;
+      font-size: .9rem;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .req { color: var(--red); }
+
+    .form-row input,
+    .form-row textarea,
+    .form-row select {
+      width: 100%;
+      padding: 11px 14px;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: .93rem;
+      transition: border .25s, box-shadow .25s;
+    }
+
+    .form-row input:focus,
+    .form-row textarea:focus,
+    .form-row select:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 10px var(--glow);
+    }
+
+    .form-row textarea { resize: vertical; min-height: 110px; }
+
+    .form-hint {
+      margin-top: 6px;
+      font-size: .78rem;
+      color: var(--dim);
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .submit-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 13px;
+      background: var(--blue);
+      color: #0a0c10;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all .25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px var(--glow); }
+    .submit-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* success banner */
+    .success-banner {
+      display: none;
+      background: rgba(0,229,160,.1);
+      border: 1px solid var(--green);
+      border-radius: 10px;
+      padding: 16px 20px;
+      color: var(--green);
+      font-weight: 600;
+      margin-bottom: 22px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .success-banner.show { display: flex; }
+
+    /* ════════════════════════════════════════
+       NOTIFICATION CARDS  (Tab 2)
+    ════════════════════════════════════════ */
+    .notif-card {
+      background: var(--card-dark);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin-bottom: 14px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      transition: border .25s, background .25s;
+    }
+
+    .notif-card.unread {
+      border-color: var(--blue);
+      background: rgba(88,166,255,.06);
+    }
+
+    .notif-card.approved { border-color: var(--green); background: rgba(0,229,160,.05); }
+    .notif-card.declined { border-color: var(--red);   background: rgba(255,107,107,.05); }
+
+    .notif-icon { font-size: 1.6rem; min-width: 40px; text-align: center; padding-top: 2px; }
+
+    .notif-body { flex: 1; }
+
+    .notif-title { font-weight: 700; margin-bottom: 4px; font-size: .97rem; }
+
+    .notif-desc { color: var(--dim); font-size: .88rem; line-height: 1.5; }
+
+    .notif-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      padding: 3px 11px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .pill-approved { background: rgba(0,229,160,.2);  color: var(--green); }
+    .pill-declined { background: rgba(255,107,107,.2); color: var(--red); }
+    .pill-pending  { background: rgba(88,166,255,.2);  color: var(--blue); }
+    .pill-info     { background: rgba(189,147,249,.2); color: var(--purple); }
+
+    .notif-time { font-size: .78rem; color: var(--dim); }
+
+    .notif-note {
+      margin-top: 10px;
+      background: rgba(255,255,255,.03);
+      border-left: 3px solid var(--orange);
+      border-radius: 0 6px 6px 0;
+      padding: 8px 12px;
+      font-size: .85rem;
+      color: var(--text);
+    }
+
+    /* ════════════════════════════════════════
+       MY REQUESTS TABLE  (Tab 3)
+    ════════════════════════════════════════ */
+    .requests-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .requests-table th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--dim);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .requests-table td {
+      padding: 14px 16px;
+      font-size: .9rem;
+      border-bottom: 1px solid rgba(48,54,61,.5);
+      vertical-align: middle;
+    }
+
+    .requests-table tr:last-child td { border-bottom: none; }
+
+    .requests-table tr:hover td { background: rgba(88,166,255,.03); }
+
+    .table-wrap {
+      background: var(--card-dark);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .req-location { font-weight: 600; }
+    .req-area     { color: var(--dim); font-size: .8rem; margin-top: 2px; }
+
+    /* ════════════════════════════════════════
+       EMPTY STATE
+    ════════════════════════════════════════ */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--dim);
+    }
+
+    .empty-icon { font-size: 3rem; margin-bottom: 14px; }
+    .empty h3   { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .empty p    { font-size: .88rem; }
+
+    /* ════════════════════════════════════════
+       SPINNER
+    ════════════════════════════════════════ */
+    .spinner {
+      display: flex;
+      justify-content: center;
+      padding: 50px;
+    }
+
+    .spinner::after {
+      content: '';
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ════════════════════════════════════════
+       RESPONSIVE
+    ════════════════════════════════════════ */
+    @media (max-width: 720px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .form-grid-2 { grid-template-columns: 1fr; }
+      .panels { padding: 20px; }
+      .tab-btn { padding: 14px 14px; font-size: .82rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════ SIDEBAR ══════════════════════════ -->
+<aside class="sidebar">
+  <a class="sidebar-logo" href="Dashboard.html">🔍 UniFind</a>
+
+  <a class="nav-link" href="Dashboard.html">📊 <span>Dashboard</span></a>
+  <a class="nav-link" href="Items.html">📋 <span>My Items</span></a>
+  <a class="nav-link" href="Report lost.html">😟 <span>Report Lost</span></a>
+  <a class="nav-link" href="Report found.html">✅ <span>Report Found</span></a>
+  <a class="nav-link active" href="Notifications.html">
+    📹 <span>CCTV</span>
+    <span class="badge" id="sidebar-badge" style="display:none">0</span>
+  </a>
+
+  <div class="sidebar-divider"></div>
+
+  <span class="nav-link danger" onclick="logout()">🚪 <span>Logout</span></span>
+</aside>
+
+<!-- ══════════════════════════ MAIN ══════════════════════════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <span class="topbar-icon">📹</span>
+    <h1>CCTV</h1>
+    <span class="topbar-sub" id="topbar-user"></span>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('request', this)">
+      📝 Request
+    </button>
+    <button class="tab-btn" onclick="switchTab('notifications', this)">
+      🔔 Notifications
+      <span class="tab-badge" id="notif-tab-badge" style="display:none">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('my-requests', this)">
+      📋 My Requests
+    </button>
+  </div>
+
+  <div class="panels">
+
+    <!-- ─────────── TAB 1 : REQUEST ─────────── -->
+    <div class="panel active" id="panel-request">
+      <p class="section-title">Submit a CCTV Footage Request</p>
+      <p class="section-sub">
+        Fill in the details below. A security admin will review your request and notify you of the decision.
+      </p>
+
+      <div class="success-banner" id="success-banner">
+        ✅ Your request has been submitted! You'll be notified once reviewed.
+      </div>
+
+      <div class="form-card">
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>Date of Incident <span class="req">*</span></label>
+            <input type="date" id="inc-date" required>
+          </div>
+          <div class="form-row">
+            <label>Approximate Time <span class="req">*</span></label>
+            <input type="time" id="inc-time" required>
+            <p class="form-hint">Give the closest time you remember</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Location / Area <span class="req">*</span></label>
+          <input type="text" id="inc-location" placeholder="e.g. Library 2nd Floor, Block B Corridor, Parking Lot A" required>
+          <p class="form-hint">Be as specific as possible — building, floor, room number</p>
+        </div>
+
+        <div class="form-row">
+          <label>Related Item (optional)</label>
+          <select id="inc-item">
+            <option value="">— Select one of your reported items —</option>
+          </select>
+          <p class="form-hint">Link this request to a lost/found report you've already submitted</p>
+        </div>
+
+        <div class="form-row">
+          <label>Reason for Request <span class="req">*</span></label>
+          <textarea id="inc-reason" placeholder="Explain why you need this footage — e.g. 'I lost my laptop here at this time and want to identify who might have picked it up.' The more detail you give, the faster admins can process it."></textarea>
+        </div>
+
+        <button class="submit-btn" id="submit-btn" onclick="submitRequest()">
+          📤 Submit CCTV Request
+        </button>
+      </div>
+    </div>
+
+    <!-- ─────────── TAB 2 : NOTIFICATIONS ─────────── -->
+    <div class="panel" id="panel-notifications">
+      <p class="section-title">CCTV Request Updates</p>
+      <p class="section-sub">
+        Notifications from security admins about your footage requests appear here.
+      </p>
+      <div id="notif-list"><div class="spinner"></div></div>
+    </div>
+
+    <!-- ─────────── TAB 3 : MY REQUESTS ─────────── -->
+    <div class="panel" id="panel-my-requests">
+      <p class="section-title">My CCTV Requests</p>
+      <p class="section-sub">
+        Track the status of all the footage requests you've submitted.
+      </p>
+      <div id="requests-list"><div class="spinner"></div></div>
+    </div>
+
+  </div><!-- /panels -->
+</div><!-- /main -->
+
+<script>
+/* ═══════════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════════ */
+const API  = 'http://localhost:3000/api';
+let USER   = null;
+let TOKEN  = null;
+
+/* ═══════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════ */
+(async function boot() {
+  const raw = localStorage.getItem('uf_user');
+  TOKEN     = localStorage.getItem('uf_token');
+
+  if (!raw) { window.location.href = 'Auth.html'; return; }
+
+  USER = JSON.parse(raw);
+  const name = USER.full_name || USER.name || 'User';
+  document.getElementById('topbar-user').textContent = `Logged in as ${name}`;
+
+  // Pre-fill user's items into the select
+  await loadUserItems();
+
+  // Load notifications and requests in background
+  loadNotifications();
+  loadMyRequests();
+
+  // Set today as default date
+  document.getElementById('inc-date').valueAsDate = new Date();
+})();
+
+/* ═══════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════ */
+function authHeaders() {
+  return TOKEN ? { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }
+               : { 'Content-Type': 'application/json' };
+}
+
+function userId() { return USER.id || USER.user_id; }
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1)  return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+}
+
+function fmtDateTime(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })
+    + ' at ' + d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+
+  // Refresh data when switching to these tabs
+  if (name === 'notifications') loadNotifications();
+  if (name === 'my-requests')   loadMyRequests();
+}
+
+/* ═══════════════════════════════════════════════
+   TAB 1 — LOAD USER ITEMS INTO SELECT
+═══════════════════════════════════════════════ */
+async function loadUserItems() {
+  try {
+    const res   = await fetch(`${API}/items/user/${userId()}`, { headers: authHeaders() });
+    const items = await res.json();
+    const sel   = document.getElementById('inc-item');
+    if (Array.isArray(items) && items.length) {
+      items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value       = item.item_id || item.id;
+        opt.textContent = `${item.type === 'lost' ? '😟' : '✅'} ${item.title} (${item.location || 'no location'})`;
+        sel.appendChild(opt);
+      });
+    }
+  } catch (e) {
+    // silently skip — item linking is optional
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   TAB 1 — SUBMIT REQUEST
+═══════════════════════════════════════════════ */
+async function submitRequest() {
+  const date     = document.getElementById('inc-date').value;
+  const time     = document.getElementById('inc-time').value;
+  const location = document.getElementById('inc-location').value.trim();
+  const reason   = document.getElementById('inc-reason').value.trim();
+  const itemId   = document.getElementById('inc-item').value;
+
+  // Validation
+  if (!date || !time || !location || !reason) {
+    flashError('Please fill in all required fields (date, time, location, reason).'); return;
+  }
+  if (reason.length < 20) {
+    flashError('Please write a more detailed reason (at least 20 characters).'); return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled     = true;
+  btn.textContent  = '⏳ Submitting…';
+
+  try {
+    const body = {
+      requester_id:   userId(),
+      item_id:        itemId || null,
+      incident_date:  date,
+      incident_time:  time,
+      location:       location,
+      reason:         reason
+    };
+
+    const res  = await fetch(`${API}/cctv/request`, {
+      method:  'POST',
+      headers: authHeaders(),
+      body:    JSON.stringify(body)
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Show success
+      document.getElementById('success-banner').classList.add('show');
+      // Reset form
+      document.getElementById('inc-date').valueAsDate = new Date();
+      document.getElementById('inc-time').value       = '';
+      document.getElementById('inc-location').value   = '';
+      document.getElementById('inc-reason').value     = '';
+      document.getElementById('inc-item').value       = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Update request list badge
+      loadMyRequests();
+    } else {
+      flashError(data.message || 'Submission failed. Please try again.');
+    }
+  } catch (err) {
+    flashError('Cannot reach server. Make sure node server.js is running.');
+  } finally {
+    btn.disabled    = false;
+    btn.innerHTML   = '📤 Submit CCTV Request';
+  }
+}
+
+function flashError(msg) {
+  const old = document.getElementById('err-banner');
+  if (old) old.remove();
+  const div = document.createElement('div');
+  div.id = 'err-banner';
+  div.style.cssText = `background:rgba(255,107,107,.1);border:1px solid var(--red);border-radius:10px;
+    padding:14px 18px;color:var(--red);font-weight:600;margin-bottom:20px;display:flex;gap:8px;align-items:center;`;
+  div.innerHTML = `⚠️ ${escHtml(msg)}`;
+  document.querySelector('#panel-request .form-card').before(div);
+  setTimeout(() => div.remove(), 5000);
+}
+
+/* ═══════════════════════════════════════════════
+   TAB 2 — NOTIFICATIONS (admin responses)
+═══════════════════════════════════════════════ */
+async function loadNotifications() {
+  const list = document.getElementById('notif-list');
+  list.innerHTML = '<div class="spinner"></div>';
+
+  try {
+    const res  = await fetch(`${API}/cctv/notifications/${userId()}`, { headers: authHeaders() });
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      list.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🔔</div>
+          <h3>No notifications yet</h3>
+          <p>When an admin approves or declines your request, you'll see it here.</p>
+        </div>`;
+      return;
+    }
+
+    // Badge count (pending decisions = unread)
+    const unread = data.filter(n => n.is_new).length;
+    const badge  = document.getElementById('notif-tab-badge');
+    const sbadge = document.getElementById('sidebar-badge');
+    if (unread > 0) {
+      badge.textContent  = unread;
+      badge.style.display = 'inline-block';
+      sbadge.textContent  = unread;
+      sbadge.style.display = 'inline-block';
+    }
+
+    list.innerHTML = data.map(n => {
+      const isApproved = n.status === 'approved';
+      const isDeclined = n.status === 'rejected' || n.status === 'declined';
+      const cardClass  = isApproved ? 'approved' : isDeclined ? 'declined' : '';
+      const icon       = isApproved ? '✅' : isDeclined ? '❌' : '⏳';
+      const pillClass  = isApproved ? 'pill-approved' : isDeclined ? 'pill-declined' : 'pill-pending';
+      const pillLabel  = isApproved ? 'Approved' : isDeclined ? 'Declined' : 'Pending';
+
+      return `
+        <div class="notif-card ${cardClass}">
+          <div class="notif-icon">${icon}</div>
+          <div class="notif-body">
+            <div class="notif-title">
+              CCTV Request — <em style="font-style:normal;color:var(--dim)">${escHtml(n.location)}</em>
+            </div>
+            <div class="notif-desc">
+              Requested footage for <strong>${fmtDate(n.incident_date)}</strong>
+              ${n.incident_time ? ' around ' + n.incident_time : ''}.
+            </div>
+            ${n.admin_note ? `<div class="notif-note">💬 Admin note: ${escHtml(n.admin_note)}</div>` : ''}
+            <div class="notif-meta">
+              <span class="status-pill ${pillClass}">${pillLabel}</span>
+              <span class="notif-time">${fmtDateTime(n.updated_at || n.created_at)}</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch (err) {
+    list.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">⚠️</div>
+        <h3>Could not load notifications</h3>
+        <p>Make sure the server is running — <code>node server.js</code></p>
+      </div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   TAB 3 — MY REQUESTS
+═══════════════════════════════════════════════ */
+async function loadMyRequests() {
+  const list = document.getElementById('requests-list');
+  list.innerHTML = '<div class="spinner"></div>';
+
+  try {
+    const res  = await fetch(`${API}/cctv/my-requests/${userId()}`, { headers: authHeaders() });
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      list.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">📋</div>
+          <h3>No requests submitted yet</h3>
+          <p>Switch to the <strong>Request</strong> tab to submit your first CCTV request.</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = `
+      <div class="table-wrap">
+        <table class="requests-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Location</th>
+              <th>Date & Time</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Submitted</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.map((r, i) => {
+              const s = r.status || 'pending';
+              const pillClass = s === 'approved' ? 'pill-approved'
+                              : (s === 'rejected' || s === 'declined') ? 'pill-declined'
+                              : s === 'completed' ? 'pill-approved'
+                              : 'pill-pending';
+              return `
+                <tr>
+                  <td style="color:var(--dim);font-size:.82rem;">#${r.request_id || (i+1)}</td>
+                  <td>
+                    <div class="req-location">${escHtml(r.location)}</div>
+                  </td>
+                  <td style="white-space:nowrap;font-size:.85rem;">
+                    ${fmtDate(r.incident_date)}<br>
+                    <span style="color:var(--dim)">${r.incident_time || '—'}</span>
+                  </td>
+                  <td style="color:var(--dim);font-size:.85rem;max-width:200px;">
+                    ${escHtml((r.reason || '').slice(0, 80))}${(r.reason || '').length > 80 ? '…' : ''}
+                  </td>
+                  <td><span class="status-pill ${pillClass}">${s.charAt(0).toUpperCase() + s.slice(1)}</span></td>
+                  <td style="color:var(--dim);font-size:.82rem;white-space:nowrap;">${timeAgo(r.created_at)}</td>
+                </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+
+  } catch (err) {
+    list.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">⚠️</div>
+        <h3>Could not load requests</h3>
+        <p>Make sure the server is running — <code>node server.js</code></p>
+      </div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   LOGOUT
+═══════════════════════════════════════════════ */
+function logout() {
+  localStorage.removeItem('uf_token');
+  localStorage.removeItem('uf_user');
+  window.location.href = 'Auth.html';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>My Reported Items — UniFind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0c10;
+      --card-dark: #161b22;
+      --border-dark: #30363d;
+      --accent-blue: #58a6ff;
+      --text-main: #f0f6fc;
+      --text-dim: #8b949e;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      margin: 0;
+    }
+
+    nav {
+      background: rgba(22, 27, 34, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-dark);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-logo { font-weight: 900; color: var(--accent-blue); text-decoration: none; font-size: 1.5rem; }
+    .nav-links a { color: var(--text-main); text-decoration: none; margin-left: 20px; font-size: 0.9rem; }
+
+    .container { max-width: 800px; margin: 20px auto; padding: 0 24px; text-align: center; }
+    
+    /* PROJECT LOGO STYLE */
+    .project-logo {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin-bottom: 20px;
+      border: 3px solid var(--accent-blue);
+    }
+
+    h1 { margin-bottom: 30px; font-weight: 800; text-align: left; }
+
+    #itemsContainer {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+      text-align: left;
+    }
+
+    .item-card {
+      background: var(--card-dark);
+      border: 1px solid var(--border-dark);
+      border-radius: 12px;
+      padding: 20px;
+      transition: transform 0.2s;
+    }
+
+    .item-card:hover { border-color: var(--accent-blue); }
+
+    .item-title { color: var(--accent-blue); margin: 0 0 10px 0; font-size: 1.4rem; }
+    .item-info { margin: 5px 0; font-size: 1rem; }
+    .label { color: var(--text-dim); font-weight: 500; }
+    .time-stamp { font-size: 0.85rem; color: var(--text-dim); margin-top: 15px; border-top: 1px solid #30363d; padding-top: 10px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="Dashboard.html" class="nav-logo">🔍 UniFind</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="Dashboard.html">Dashboard</a>
+    <a href="Report lost.html">Report Lost</a>
+    <a href="Report found.html">Report Found</a>
+    <a href="Items.html" style="color:var(--accent-blue);font-weight:700;">My Items</a>
+    <a href="#" onclick="logout()" style="color:#ff6b6b;">Logout</a>
+  </div>
+</nav>
+
+<div class="container">
+<img src="data:image/jpeg;base64,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" alt="Lost and Found Emblem">  
+  <h1>My Reported Items</h1>
+
+  <div id="itemsContainer">
+    <div style="text-align:center; padding:50px; color:var(--text-dim);">
+      <p>🔍 Scanning database for your reports...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+    const API_BASE = 'http://localhost:3000/api';
+
+    async function loadMyItems() {
+        const container = document.getElementById('itemsContainer');
+
+        // ── 1. Auth check ──────────────────────────────────────────
+        const userData = localStorage.getItem('uf_user');
+        if (!userData) {
+            window.location.href = 'Auth.html';
+            return;
+        }
+
+        const user = JSON.parse(userData);
+        // Handles both login response shapes: { id } and { user_id }
+        const userId = user.id || user.user_id;
+
+        if (!userId) {
+            container.innerHTML = `<p style="color:#ff7b72;text-align:center;">
+                ⚠️ Could not read your user ID. Please log out and log in again.</p>`;
+            return;
+        }
+
+        // ── 2. Fetch from backend ──────────────────────────────────
+        container.innerHTML = `<div style="text-align:center;padding:50px;color:var(--text-dim);">
+            <p>🔍 Loading your items…</p></div>`;
+
+        try {
+            const token = localStorage.getItem('uf_token');
+            const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+            const response = await fetch(`${API_BASE}/items/user/${userId}`, { headers });
+
+            // Give a clear error if the server is down or returns non-JSON
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.message || `HTTP ${response.status}`);
+            }
+
+            const items = await response.json();
+
+            // ── 3. Empty state ─────────────────────────────────────
+            if (!items || items.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center;padding:60px;color:var(--text-dim);">
+                        <div style="font-size:3rem;margin-bottom:16px;">📭</div>
+                        <p style="font-size:1.1rem;font-weight:600;">No reports yet</p>
+                        <p style="font-size:0.9rem;margin-top:8px;">
+                            <a href="Report lost.html" style="color:var(--accent-blue);">Report a lost item</a> or
+                            <a href="Report found.html" style="color:#00e5a0;margin-left:4px;">report a found item</a>
+                        </p>
+                    </div>`;
+                return;
+            }
+
+            // ── 4. Render cards ────────────────────────────────────
+            container.innerHTML = items.map(item => {
+                const dateRaw  = item.reported_at || item.created_at || new Date();
+                const itemDate = new Date(dateRaw).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+                const itemTime = new Date(dateRaw).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+
+                const typeBadge  = item.type === 'lost'
+                    ? `<span style="background:#ff6b6b22;color:#ff6b6b;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;">😟 LOST</span>`
+                    : `<span style="background:#00e5a022;color:#00e5a0;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;">✅ FOUND</span>`;
+
+                const statusColor = { active:'#58a6ff', matched:'#f0a500', resolved:'#00e5a0' }[item.status] || '#58a6ff';
+                const statusBadge = `<span style="color:${statusColor};font-weight:700;font-size:0.8rem;">${(item.status || 'ACTIVE').toUpperCase()}</span>`;
+
+                const imgHtml = item.image_url
+                    ? `<img src="http://localhost:3000${item.image_url}" alt="${item.title}"
+                           style="width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:14px;"
+                           onerror="this.style.display='none'">`
+                    : '';
+
+                return `
+                <div class="item-card">
+                    ${imgHtml}
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        ${typeBadge}
+                        ${statusBadge}
+                    </div>
+                    <h3 class="item-title">${escHtml(item.title) || 'Untitled Item'}</h3>
+                    ${item.description ? `<p class="item-info" style="color:var(--text-dim);font-size:0.9rem;margin-bottom:10px;">${escHtml(item.description)}</p>` : ''}
+                    <p class="item-info"><span class="label">📍 Location:</span> ${escHtml(item.location) || 'Not specified'}</p>
+                    <p class="item-info"><span class="label">📂 Category:</span> ${escHtml(item.category) || 'General'}</p>
+                    <div class="time-stamp">📅 Reported on ${itemDate} at ${itemTime}</div>
+                </div>`;
+            }).join('');
+
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            container.innerHTML = `
+                <div style="color:#ff7b72;text-align:center;padding:40px;">
+                    <div style="font-size:2.5rem;margin-bottom:12px;">⚠️</div>
+                    <p><strong>Could not load items</strong></p>
+                    <p style="font-size:0.85rem;margin-top:8px;color:var(--text-dim);">
+                        Error: ${error.message}<br><br>
+                        Make sure <code style="background:#0a0c10;padding:2px 6px;border-radius:4px;">node server.js</code> is running.
+                    </p>
+                </div>`;
+        }
+    }
+
+    // XSS-safe escape helper
+    function escHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function logout() {
+        localStorage.removeItem('uf_token');
+        localStorage.removeItem('uf_user');
+        window.location.href = 'Auth.html';
+    }
+
+    window.onload = loadMyItems;
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Report Found Item — UniFind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ── GLOBAL DARK THEME ─────────────────────────── */
+  :root {
+    --bg-dark: #0a0c10;
+    --card-dark: #161b22;
+    --border-dark: #30363d;
+    --accent-blue: #58a6ff;
+    --glow-blue: rgba(88, 166, 255, 0.4);
+    --text-main: #f0f6fc;
+    --text-dim: #8b949e;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: var(--bg-dark) !important;
+    color: var(--text-main);
+    font-family: 'Outfit', sans-serif;
+    line-height: 1.6;
+  }
+
+  /* ── NAVBAR ────────────────────────────────────── */
+  nav {
+    background: rgba(22, 27, 34, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-dark);
+    padding: 16px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-logo {
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: var(--accent-blue);
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+  }
+
+  .nav-links a {
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover {
+    color: var(--accent-blue);
+  }
+
+  /* ── HEADER ────────────────────────────────────── */
+  .page-header {
+    padding: 60px 24px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-dark);
+  }
+
+  .page-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+  }
+
+  .page-subtitle {
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto;
+    font-size: 1rem;
+  }
+
+  /* ── FORM CONTAINER ────────────────────────────── */
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 24px;
+  }
+
+  .form-group {
+    margin-bottom: 28px;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.95rem;
+  }
+
+  .form-input, .form-textarea, .form-select {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--card-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-input:focus, .form-textarea:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 12px var(--glow-blue);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  /* ── FILE UPLOAD ────────────────────────────────── */
+  .file-input-wrapper {
+    position: relative;
+    margin-bottom: 28px;
+  }
+
+  .file-input-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 32px;
+    border: 2px dashed var(--border-dark);
+    border-radius: 12px;
+    background: rgba(22, 27, 34, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-dim);
+  }
+
+  .file-input-label:hover {
+    border-color: var(--accent-blue);
+    background: rgba(88, 166, 255, 0.1);
+    color: var(--text-main);
+  }
+
+  .file-input-label input {
+    display: none;
+  }
+
+  /* ── BUTTONS ────────────────────────────────────── */
+  .btn-group {
+    display: flex;
+    gap: 16px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+  }
+
+  .btn-primary {
+    background: #00e5a0;
+    color: var(--bg-dark);
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(0, 229, 160, 0.4);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--border-dark);
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent-blue);
+    background: rgba(88, 166, 255, 0.1);
+  }
+
+  /* ── HELPER TEXT ────────────────────────────────── */
+  .helper-text {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* ── REQUIRED INDICATOR ────────────────────────── */
+  .required {
+    color: #ff6b6b;
+  }
+</style>
+</head>
+
+<body>
+
+<nav>
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">UniFind</a>
+    <div class="nav-links">
+      <a href="Report lost.html">Report Lost</a>
+      <a href="Report found.html">Report Found</a>
+      <a href="Items.html">My Items</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1 class="page-title">✅ Report Found Item</h1>
+  <p class="page-subtitle">Found something on campus? Help return it to its owner by providing details. Our AI will search for matching lost reports.</p>
+</div>
+
+<div class="container">
+  <form id="foundForm">
+    
+    <div class="form-group">
+      <label class="form-label">Item Title <span class="required">*</span></label>
+      <input type="text" class="form-input" id="title" placeholder="e.g., Black Leather Wallet" required>
+      <p class="helper-text">Brief description of what you found</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Category <span class="required">*</span></label>
+      <select class="form-select" id="category" required>
+        <option value="">Select a category</option>
+        <option>Electronics</option>
+        <option>Clothing</option>
+        <option>Stationery</option>
+        <option>Keys</option>
+        <option>Wallet/Bag</option>
+        <option>Books</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Detailed Description <span class="required">*</span></label>
+      <textarea class="form-textarea" id="description" placeholder="Color, brand, condition, any visible text, identifying marks, items inside, etc." required></textarea>
+      <p class="helper-text">Include any identifying information like names, cards, labels, or unique features</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Location Found <span class="required">*</span></label>
+      <input type="text" class="form-input" id="location" placeholder="e.g., Library Entrance, Block B, Near Parking" required>
+      <p class="helper-text">Where exactly was it found?</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Date & Time Found</label>
+      <input type="datetime-local" class="form-input" id="foundDateTime">
+      <p class="helper-text">When did you find it?</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Upload Photos <span class="required">*</span></label>
+      <div class="file-input-wrapper">
+        <label class="file-input-label">
+          <span>📸</span>
+          <div>
+            <div style="font-weight:600;">Drop photos here or click to upload</div>
+            <div style="font-size:0.8rem; margin-top:4px;">PNG, JPG up to 5MB</div>
+          </div>
+          <input type="file" id="photoInput" accept="image/*" multiple required>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Current Location of Item <span class="required">*</span></label>
+      <input type="text" class="form-input" id="itemLocation" placeholder="e.g., Security Desk Block B, With me, Lost & Found Office" required>
+      <p class="helper-text">Where is the item now?</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Your Name <span class="required">*</span></label>
+      <input type="text" class="form-input" id="reporterName" placeholder="Full name" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Your Email <span class="required">*</span></label>
+      <input type="email" class="form-input" id="reporterEmail" placeholder="your@email.com" required>
+      <p class="helper-text">Owner will contact you here</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Your Phone (Optional)</label>
+      <input type="tel" class="form-input" id="reporterPhone" placeholder="+92 3XX XXXXXXX">
+    </div>
+
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary">Submit Found Report</button>
+      <a href="index.html" class="btn btn-secondary" style="text-align:center;">Cancel</a>
+    </div>
+
+  </form>
+</div>
+
+<style>
+  /* ── SUCCESS POPUP ─────────────────────────────── */
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(6px);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+  }
+  .popup-overlay.open { display: flex; }
+  .popup-box {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 20px;
+    padding: 48px 40px;
+    text-align: center;
+    max-width: 420px;
+    width: 90%;
+    animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn {
+    from { opacity:0; transform: scale(0.85); }
+    to   { opacity:1; transform: scale(1); }
+  }
+  .popup-icon { font-size: 3.5rem; margin-bottom: 16px; }
+  .popup-title { font-size: 1.5rem; font-weight: 900; color: #00e5a0; margin-bottom: 10px; }
+  .popup-msg { color: #8b949e; font-size: 0.95rem; line-height: 1.6; margin-bottom: 28px; }
+  .popup-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background: #00e5a0;
+    color: #0a0c10;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    transition: opacity 0.2s;
+  }
+  .popup-btn:hover { opacity: 0.85; }
+</style>
+
+<!-- SUCCESS POPUP -->
+<div class="popup-overlay" id="successPopup">
+  <div class="popup-box">
+    <div class="popup-icon">✅</div>
+    <div class="popup-title">Report Submitted!</div>
+    <div class="popup-msg">
+      Your found item has been reported successfully.<br>
+      Our system will look for matching lost reports and notify the owner.
+    </div>
+    <button class="popup-btn" onclick="window.location.href='Dashboard.html'">Go to Dashboard</button>
+  </div>
+</div>
+
+<script>
+  // ── GUARD: must be logged in ──────────────────────
+  const user = JSON.parse(localStorage.getItem('uf_user'));
+  if (!user) {
+    alert('Please log in first.');
+    window.location.href = 'Auth.html';
+  }
+
+  // ── FORM SUBMIT ───────────────────────────────────
+  document.getElementById('foundForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.textContent = 'Submitting…';
+    submitBtn.disabled = true;
+
+    // Build multipart form (supports image upload)
+    const formData = new FormData();
+    formData.append('user_id',     user.user_id || user.id);
+    formData.append('title',       document.getElementById('title').value.trim());
+    formData.append('category',    document.getElementById('category').value);
+    formData.append('description', document.getElementById('description').value.trim());
+    formData.append('location',    document.getElementById('location').value.trim());
+    formData.append('type',        'found');
+
+    const photoFile = document.getElementById('photoInput').files[0];
+    if (photoFile) formData.append('image', photoFile);
+
+    try {
+      const res = await fetch('http://localhost:3000/api/items/report', {
+        method: 'POST',
+        body: formData   // No Content-Type header — browser sets it with boundary
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        // Show success popup
+        document.getElementById('successPopup').classList.add('open');
+        this.reset();
+      } else {
+        alert('❌ Error: ' + (result.message || 'Submission failed.'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('❌ Cannot reach server. Make sure node server.js is running, then open via http://localhost:3000/Report%20found.html');
+    } finally {
+      submitBtn.textContent = 'Submit Found Report';
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>

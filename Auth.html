@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Login & Signup — UniFind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #0a0c10;
+    --card-dark: #161b22;
+    --border-dark: #30363d;
+    --accent-blue: #58a6ff;
+    --glow-blue: rgba(88, 166, 255, 0.4);
+    --success: #00e5a0;
+    --danger: #ff6b6b;
+    --text-main: #f0f6fc;
+    --text-dim: #8b949e;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background: linear-gradient(135deg, #0a0c10 0%, #161b22 100%);
+    color: var(--text-main);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* ── AUTH CONTAINER ────────────────────────────── */
+  .auth-wrapper {
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .auth-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: var(--card-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+
+  @media (max-width: 768px) {
+    .auth-grid {
+      grid-template-columns: 1fr;
+    }
+    .left-panel {
+      display: none;
+    }
+  }
+
+  /* ── LEFT PANEL ────────────────────────────────── */
+  .left-panel {
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.15) 0%, rgba(0, 229, 160, 0.1) 100%);
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 1px solid var(--border-dark);
+  }
+
+  .logo {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+
+  .brand-text {
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin-bottom: 16px;
+    color: var(--accent-blue);
+  }
+
+  .brand-desc {
+    color: var(--text-dim);
+    line-height: 1.8;
+    margin-bottom: 32px;
+  }
+
+  .features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .feature-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .feature-icon {
+    font-size: 1.3rem;
+    min-width: 24px;
+  }
+
+  .feature-text {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+
+  /* ── RIGHT PANEL (FORMS) ────────────────────────── */
+  .right-panel {
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .auth-form {
+    display: none;
+  }
+
+  .auth-form.active {
+    display: block;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .form-title {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 12px;
+  }
+
+  .form-subtitle {
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    font-size: 0.95rem;
+  }
+
+  /* ── TABS ──────────────────────────────────────── */
+  .form-tabs {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border-dark);
+  }
+
+  .tab-btn {
+    padding: 12px 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+  }
+
+  .tab-btn.active {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+  }
+
+  .tab-btn:hover {
+    color: var(--text-main);
+  }
+
+  /* ── FORM GROUPS ────────────────────────────────── */
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.9rem;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    padding: 12px 16px;
+    background: #0a0c10;
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 12px var(--glow-blue);
+  }
+
+  .form-input::placeholder {
+    color: var(--text-dim);
+  }
+
+  /* ── USER TYPE SELECTOR ────────────────────────── */
+  .user-type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .user-type-btn {
+    padding: 16px;
+    background: #0a0c10;
+    border: 2px solid var(--border-dark);
+    border-radius: 8px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .user-type-btn:hover {
+    border-color: var(--accent-blue);
+  }
+
+  .user-type-btn.selected {
+    background: rgba(88, 166, 255, 0.2);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+  }
+
+  /* ── BUTTON ────────────────────────────────────── */
+  .form-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent-blue);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .form-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px var(--glow-blue);
+  }
+
+  .form-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* ── LINKS ────────────────────────────────────── */
+  .form-footer {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+
+  .form-footer a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .form-footer a:hover {
+    text-decoration: underline;
+  }
+
+  /* ── ERROR MESSAGE ────────────────────────────── */
+  .error-msg {
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+    display: none;
+  }
+
+  .error-msg.show {
+    display: block;
+  }
+
+  .success-msg {
+    background: rgba(0, 229, 160, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+    display: none;
+  }
+
+  .success-msg.show {
+    display: block;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="auth-wrapper">
+  <div class="auth-grid">
+    
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="logo">🔍</div>
+      <div class="brand-text">UniFind</div>
+      <p class="brand-desc">AI-powered lost & found platform connecting our university community</p>
+      
+      <div class="features-list">
+        <div class="feature-item">
+          <div class="feature-icon">🤖</div>
+          <div class="feature-text"><strong>AI Matching:</strong> Instant matches between lost & found items</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📸</div>
+          <div class="feature-text"><strong>Image Recognition:</strong> Upload photos for quick identification</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📹</div>
+          <div class="feature-text"><strong>CCTV Support:</strong> Request security footage if needed</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">👥</div>
+          <div class="feature-text"><strong>Community Help:</strong> Maid & admin staff assistance</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">💬</div>
+          <div class="feature-text"><strong>Live Updates:</strong> Community comments & real-time notifications</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL (FORMS) -->
+    <div class="right-panel">
+      
+      <!-- LOGIN FORM -->
+      <form class="auth-form active" id="loginForm">
+        <h2 class="form-title">Welcome</h2>
+        <p class="form-subtitle">Login to your UniFind account</p>
+        
+        <div class="error-msg" id="loginError"></div>
+
+        <div class="form-group">
+          <label class="form-label">Are you an Admin or User?</label>
+          <div class="user-type-grid">
+            <button type="button" class="user-type-btn login-type-btn" data-type="user">👤 User</button>
+            <button type="button" class="user-type-btn login-type-btn" data-type="admin">👨‍💻 Admin</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="loginEmail" placeholder="your@university.edu.pk" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="form-btn">Login to Account</button>
+
+        <div class="form-footer">
+          Don't have an account? <a onclick="switchTab('signup')">Sign up here</a>
+        </div>
+      </form>
+
+      <!-- SIGNUP FORM -->
+      <form class="auth-form" id="signupForm">
+        <h2 class="form-title">Create Account</h2>
+        <p class="form-subtitle">Join our lost & found community</p>
+
+        <div class="error-msg" id="signupError"></div>
+        <div class="success-msg" id="signupSuccess"></div>
+
+        <div class="form-group">
+          <label class="form-label">I am a:</label>
+          <div class="user-type-grid">
+            <button type="button" class="user-type-btn" data-type="student">👤 Student</button>
+            <button type="button" class="user-type-btn" data-type="staff">👨‍💼 Staff</button>
+            <button type="button" class="user-type-btn" data-type="maid">🧹 Maid/Servant</button>
+            <button type="button" class="user-type-btn" data-type="admin">👨‍💻 Admin/CCTV</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="signupName" placeholder="Your full name" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="signupEmail" placeholder="your@university.edu.pk" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" class="form-input" id="signupPhone" placeholder="+92 3XX XXXXXXX" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="signupPassword" placeholder="••••••••" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input type="password" class="form-input" id="signupConfirmPassword" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="form-btn">Create Account</button>
+
+        <div class="form-footer">
+          Already have an account? <a onclick="switchTab('login')">Login here</a>
+        </div>
+      </form>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  alert("JavaScript is ALIVE!"); // <-- Add this here
+  // 1. Declare variables and helper functions at the VERY top
+  let selectedUserType = null;
+  let selectedLoginType = null;
+  const API_URL = 'http://localhost:3000/api/auth';
+
+  function switchTab(tab) {
+    document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+    document.getElementById(tab === 'login' ? 'loginForm' : 'signupForm').classList.add('active');
+  }
+
+  function showError(elementId, message) {
+    const el = document.getElementById(elementId);
+    if(el) {
+        el.textContent = message;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 4000);
+    }
+  }
+
+  // 2. Setup button listeners (outside of submit events)
+  document.querySelectorAll('.login-type-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.login-type-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedLoginType = btn.dataset.type;
+    });
+  });
+
+  document.querySelectorAll('.user-type-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.user-type-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedUserType = btn.dataset.type;
+      console.log("Selected Role:", selectedUserType); // For debugging
+    });
+  });
+
+  // 3. LOGIN LOGIC
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!selectedLoginType) return showError('loginError', 'Please select Admin or User');
+
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+      const response = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role: selectedLoginType })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('uf_user', JSON.stringify(data.user));
+        localStorage.setItem('uf_token', data.token);
+        alert(`✅ Login successful!`);
+        window.location.href = data.user.role === 'admin' ? 'Admin.html' : 'Dashboard.html';
+      } else {
+        showError('loginError', data.message || 'Invalid Credentials');
+      }
+    } catch (err) {
+      showError('loginError', 'Backend server is offline');
+    }
+  });
+
+  // 4. SIGNUP LOGIC
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Check if a role was selected
+    if (!selectedUserType) {
+        showError('signupError', 'Please click one of the buttons (Student/Staff/etc)');
+        return;
+    }
+
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
+    const phone = document.getElementById('signupPhone').value;
+    const password = document.getElementById('signupPassword').value;
+    const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+    if (password !== confirmPassword) return showError('signupError', 'Passwords do not match');
+    if (password.length < 6) return showError('signupError', 'Password must be 6+ chars');
+
+    try {
+      const response = await fetch(`${API_URL}/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          full_name: name, 
+          email, 
+          phone, 
+          password, 
+          role: selectedUserType 
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const successEl = document.getElementById('signupSuccess');
+        successEl.textContent = `✅ Account created! Please login.`;
+        successEl.classList.add('show');
+        setTimeout(() => switchTab('login'), 2000);
+      } else {
+        showError('signupError', data.message || 'Signup failed');
+      }
+    } catch (err) {
+      showError('signupError', 'Backend server is offline');
+    }
+  });
+</script>
+</body>
+</html>
