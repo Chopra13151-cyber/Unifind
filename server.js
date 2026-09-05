@@ -1,3 +1,5 @@
+// http://localhost:3000/Admin.html      ,   node server.js
+
 const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
